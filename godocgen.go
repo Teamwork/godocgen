@@ -72,27 +72,29 @@ var (
 func main() {
 	outdir := "./_site"
 	scan := []string{"github.com/teamwork/..."}
-	if len(os.Args) > 1 {
-		scan = os.Args[1:]
+	if len(os.Args) > 2 {
+		scan = os.Args[2:]
 	}
 
-	packages, err := list(scan...)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "cannot list packages: %v\n", err)
-		os.Exit(1)
-	}
-
-	for _, pkg := range packages {
-		err := writePackage(outdir, pkg)
+	if len(os.Args) > 1 && os.Args[1] != "home" {
+		packages, err := list(scan...)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg, err)
+			fmt.Fprintf(os.Stderr, "cannot list packages: %v\n", err)
 			os.Exit(1)
 		}
-	}
 
-	if err := makeIndexes(outdir); err != nil {
-		fmt.Fprintf(os.Stderr, "could not generate index.html files: %v\n", err)
-		os.Exit(1)
+		for _, pkg := range packages {
+			err := writePackage(outdir, pkg)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg, err)
+				os.Exit(1)
+			}
+		}
+
+		if err := makeIndexes(outdir); err != nil {
+			fmt.Fprintf(os.Stderr, "could not generate index.html files: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	if err := makeHome(outdir, scan); err != nil {
@@ -145,13 +147,13 @@ func listDocs(dirs ...string) ([][]string, error) {
 		}
 
 		pkgs := strings.Split(strings.TrimSpace(string(out)), "\n")
-		for _, p := range pkgs {
-			p = strings.Replace(p, "github.com/teamwork/", "", 1)
+		for _, importPath := range pkgs {
+			p := strings.Replace(importPath, "github.com/teamwork/", "", 1)
 			space := strings.Index(p, " ")
 			if space == -1 {
-				packages = append(packages, []string{p, "", "0"})
+				packages = append(packages, []string{p, "", "0", importPath})
 			} else {
-				packages = append(packages, []string{p[:space], p[space:], "0"})
+				packages = append(packages, []string{p[:space], p[space:], "0", importPath})
 			}
 		}
 	}
@@ -185,8 +187,10 @@ func listDocs(dirs ...string) ([][]string, error) {
 		add = append(add, []string{d, "",
 			// I think I have officially discovered the best way of doing
 			// subtraction in Go.
-			fmt.Sprintf("%s", []byte{[]byte(p[2])[0] - 1})})
+			fmt.Sprintf("%s", []byte{[]byte(p[2])[0] - 1}),
+			d})
 	}
+
 	packages = append(packages, add...)
 
 	sort.Slice(packages, func(i, j int) bool {
@@ -197,6 +201,8 @@ func listDocs(dirs ...string) ([][]string, error) {
 	for i := range packages {
 		packages[i][2] = fmt.Sprintf("%d", len(strings.Split(packages[i][0], "/")))
 		packages[i][0] = filepath.Base(packages[i][0])
+
+		packages[i][3] = strings.Replace(strings.TrimSpace(packages[i][3]), "github.com/teamwork/", "", 1)
 	}
 
 	// Indent level 0 for packages with 0 subpackages
@@ -310,16 +316,6 @@ func makeIndexes(outdir string) error {
 	})
 }
 
-// InStringSlice reports whether str is within list
-func InStringSlice(list []string, str string) bool {
-	for _, item := range list {
-		if item == str {
-			return true
-		}
-	}
-	return false
-}
-
 // Make the homepage.
 func makeHome(path string, pkgs []string) error {
 	// Get list of all files and dirs.
@@ -331,15 +327,18 @@ func makeHome(path string, pkgs []string) error {
 	// Add to group.
 	for _, pkg := range contents {
 		found := false
+	groups:
 		for i, g := range groups {
-			if InStringSlice(g.Projects, pkg[0]) {
-				groups[i].Packages = append(groups[i].Packages, packageT{
-					Name:  pkg[0],
-					Doc:   pkg[1],
-					Depth: pkg[2],
-				})
-				found = true
-				break
+			for _, project := range g.Projects {
+				if strings.HasPrefix(pkg[3], project) {
+					groups[i].Packages = append(groups[i].Packages, packageT{
+						Name:  pkg[0],
+						Doc:   pkg[1],
+						Depth: pkg[2],
+					})
+					found = true
+					break groups
+				}
 			}
 		}
 

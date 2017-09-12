@@ -55,7 +55,7 @@
 			row = $(this).closest('tr')
 			while (true) {
 				row = row.next()
-				if (row.is('.indent-0, .indent-1'))
+				if (row.is('.indent-0, .indent-1') || !row.is('tr'))
 					break
 				row.css('display', expand ? '' : 'none')
 			}
