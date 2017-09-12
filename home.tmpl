@@ -16,26 +16,30 @@
 </div>
 
 <div id="homepage">
-	<p>Cheeryo Teamworkers! This is all the documentation for all our Go
+	<p>Cheerio Teamworkers! This is all the documentation for all our Go
 		code; both public and private. It is re-generated automatically using <a
 		href="https://github.com/teamwork/godocgen">the <code>godocgen</code>
 		tool</a>. Questions or problems can be reported to Martin.</p>
 
-	<table>
-		<tbody>
-			{{ range $i, $pkg := .contents }}
-				<tr class="indent-{{ index $pkg 2 }}">
-					<td>
-						{{ if and (eq (index $pkg 2) "1") }}
-							<a href="" class="expand">▶</a>
-						{{ end }}
-						<a href="{{ index $pkg 0 }}/index.html">{{ index $pkg 0 }}</a>
-					</td>
-					<td>{{ index $pkg 1 }}</td>
-				</tr>
-			{{ end }}
-		</body>
-	</table>
+	{{ range $g := .groups }}
+		<h1>{{ $g.Name }}</h1>
+		<p>{{ $g.Desc }}</p>
+		<table>
+			<tbody>
+				{{ range $pkg := $g.Packages }}
+					<tr class="indent-{{ $pkg.Depth }}">
+						<td>
+							{{ if eq $pkg.Depth "1" }}
+								<a href="" class="expand">▶</a>
+							{{ end }}
+							<a href="{{ $pkg.Name }}/index.html">{{ $pkg.Name }}</a>
+						</td>
+						<td>{{ $pkg.Doc }}</td>
+					</tr>
+				{{ end }}
+			</body>
+		</table>
+	{{ end }}
 </div>
 
 <script src="/_static/jquery.js"></script>

@@ -12,11 +12,61 @@ import (
 	"strings"
 )
 
+type packageT struct {
+	Name, Doc, Depth string
+}
+
 var (
 	templates = template.Must(template.ParseFiles("package.tmpl", "index.tmpl", "home.tmpl"))
 	style     = mustRead("./style.css")
-	// TODO: Also load JS from:
-	// https://go.googlesource.com/tools/+/2d19ab38faf14664c76088411c21bf4fafea960b/godoc/static/godocs.js
+
+	groups = []struct {
+		Name, Desc string
+		Projects   []string
+		Packages   []packageT
+	}{
+		{
+			"libraries",
+			"Generic libraries that can be used by any project. Both public and private.",
+			[]string{
+				"cache", "database", "dlm", "flipout", "go-spamc", "httperr", "log",
+				"mailaddress", "test", "utils", "must", "reload", "tnef",
+			},
+			[]packageT{},
+		},
+		{
+			"desk",
+			"Teamwork Desk-specific projects",
+			[]string{
+				"desk", "deskactivity", "deskdocs", "deske2e", "deskedge",
+				"deskimporter", "desksentiment", "desksockets", "desktwitter",
+				"deskwebhooks", "elasticdesk", "mailchecker",
+			},
+			[]packageT{},
+		},
+		{
+			"projects",
+			"Teamwork Projects-specific projects.",
+			[]string{
+				"TeamworkAPIInGO", "projects-api", "projects-webhooks", "projectsapigo",
+			},
+			[]packageT{},
+		},
+		{
+			"other",
+			"Everything not in one of the other groups.",
+			[]string{},
+			[]packageT{},
+		},
+		{
+			"deprecated",
+			"Old stuff; don't use unless you really know what you're doing",
+			[]string{
+				"TeamworkDeskTool", "go-modules", "email",
+			},
+			[]packageT{},
+		},
+	}
 )
 
 func main() {
@@ -89,20 +139,19 @@ func listDocs(dirs ...string) ([][]string, error) {
 
 	for _, dir := range dirs {
 		cmd := exec.Command("go", "list", "-f", "{{.ImportPath}} {{.Doc}}", dir)
-
 		out, err := cmd.Output()
 		if err != nil {
 			return nil, fmt.Errorf("listDocs error: %v; output: %s", err, out)
 		}
 
 		pkgs := strings.Split(strings.TrimSpace(string(out)), "\n")
-		for _, pkg := range pkgs {
-			pkg = strings.Replace(pkg, "github.com/teamwork/", "", 1)
-			space := strings.Index(pkg, " ")
+		for _, p := range pkgs {
+			p = strings.Replace(p, "github.com/teamwork/", "", 1)
+			space := strings.Index(p, " ")
 			if space == -1 {
-				packages = append(packages, []string{pkg, "", "0"})
+				packages = append(packages, []string{p, "", "0"})
 			} else {
-				packages = append(packages, []string{pkg[:space], pkg[space:], "0"})
+				packages = append(packages, []string{p[:space], p[space:], "0"})
 			}
 		}
 	}
@@ -261,12 +310,46 @@ func makeIndexes(outdir string) error {
 	})
 }
 
+// InStringSlice reports whether str is within list
+func InStringSlice(list []string, str string) bool {
+	for _, item := range list {
+		if item == str {
+			return true
+		}
+	}
+	return false
+}
+
 // Make the homepage.
 func makeHome(path string, pkgs []string) error {
 	// Get list of all files and dirs.
 	contents, err := listDocs(pkgs...)
 	if err != nil {
 		return err
+	}
+
+	// Add to group.
+	for _, pkg := range contents {
+		found := false
+		for i, g := range groups {
+			if InStringSlice(g.Projects, pkg[0]) {
+				groups[i].Packages = append(groups[i].Packages, packageT{
+					Name:  pkg[0],
+					Doc:   pkg[1],
+					Depth: pkg[2],
+				})
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			groups[3].Packages = append(groups[3].Packages, packageT{
+				Name:  pkg[0],
+				Doc:   pkg[1],
+				Depth: pkg[2],
+			})
+		}
 	}
 
 	out := filepath.Join(path, "/index.html")
@@ -277,11 +360,8 @@ func makeHome(path string, pkgs []string) error {
 
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "home.tmpl", map[string]interface{}{
-		"style":    template.CSS(style),
-		"contents": contents,
-		//"godoc":     template.HTML(doc),
-		//"pkgHead":   filepath.Base(pkg),
-		//"pkgFull":   pkg,
+		"style":     template.CSS(style),
+		"groups":    groups,
 		"mainTitle": "Teamwork Go doc",
 	})
 	if err != nil {

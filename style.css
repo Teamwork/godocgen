@@ -1,8 +1,5 @@
-#homepage ul {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-	margin-lefT: 20px;
+#homepage h1 {
+	margin-left: 20px;
 }
 
 #homepage .indent-0 td:first-child {
@@ -18,11 +15,6 @@
 #homepage .indent-4 td:first-child { padding-left: 6em; }
 #homepage .indent-5 td:first-child { padding-left: 8em; }
 #homepage .indent-6 td:first-child { padding-left: 10em; }
-
-#homepage ul li span {
-	display: inline-block;
-	min-width: 15em;
-}
 
 table {
 	border: none;
