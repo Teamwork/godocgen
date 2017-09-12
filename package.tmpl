@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ .pkgHead }} – {{ .mainTitle }}</title>
+	<style>{{ .style }}</style>
+	<!-- <link rel="stylesheet" href="/lib/godoc/jquery.treeview.css"> -->
+	<!-- <script type="text/javascript">window.initFuncs = [];</script> -->
+</head>
+
+<body>
+
+<div id="topbar" class="wide">
+	<div class="container">
+		<div class="top-heading" id="heading-wide"><a href="/">{{ .mainTitle }}</a></div>
+	</div>
+</div>
+
+<div id="page" class="wide">
+	<div class="container">
+		<h1>Package {{.pkgHead}}</h1>
+		{{.godoc}}
+	</div>
+</div>
+
+<!--
+<script type="text/javascript" src="/lib/godoc/jquery.js"></script>
+<script type="text/javascript" src="/lib/godoc/jquery.treeview.js"></script>
+<script type="text/javascript" src="/lib/godoc/jquery.treeview.edit.js"></script>
+<script>var goVersion = "go1.9";</script>
+<script type="text/javascript" src="/lib/godoc/godocs.js"></script>
+-->
+</body>
+</html>
