@@ -107,6 +107,39 @@ func listDocs(dirs ...string) ([][]string, error) {
 		}
 	}
 
+	// go list won't list dirs without Go files, so e.g.
+	// github.com/teamwork/TeamworkAPIInGO/app
+	// Would show as just "app", since "TeamworkAPIInGO" has no Go files.
+	add := [][]string{}
+	for _, p := range packages {
+		d := filepath.Dir(p[0])
+		if d == "." {
+			continue
+		}
+
+		goFiles, _ := filepath.Glob(filepath.Join("./_clone/src/github.com/teamwork/", d, "/*.go"))
+		if len(goFiles) > 0 {
+			continue
+		}
+
+		found := false
+		for _, a := range add {
+			if a[0] == d {
+				found = true
+				break
+			}
+		}
+		if found {
+			continue
+		}
+
+		add = append(add, []string{d, "",
+			// I think I have officially discovered the best way of doing
+			// subtraction in Go.
+			fmt.Sprintf("%s", []byte{[]byte(p[2])[0] - 1})})
+	}
+	packages = append(packages, add...)
+
 	sort.Slice(packages, func(i, j int) bool {
 		return packages[i][0] < packages[j][0]
 	})
@@ -115,6 +148,19 @@ func listDocs(dirs ...string) ([][]string, error) {
 	for i := range packages {
 		packages[i][2] = fmt.Sprintf("%d", len(strings.Split(packages[i][0], "/")))
 		packages[i][0] = filepath.Base(packages[i][0])
+	}
+
+	// Indent level 0 for packages with 0 subpackages
+	for i := range packages {
+		if i+1 == len(packages) {
+			break
+		}
+		if packages[i][2] != "1" {
+			continue
+		}
+		if packages[i+1][2] == "1" {
+			packages[i][2] = "0"
+		}
 	}
 
 	return packages, nil

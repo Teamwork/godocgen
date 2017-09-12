@@ -5,8 +5,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>{{ .mainTitle }}</title>
 	<style>{{ .style }}</style>
-	<!-- <link rel="stylesheet" href="/lib/godoc/jquery.treeview.css"> -->
-	<!-- <script type="text/javascript">window.initFuncs = [];</script> -->
 </head>
 
 <body>
@@ -17,30 +15,49 @@
 	</div>
 </div>
 
-<div id="page" class="wide">
-	<div class="container">
-		<p>Cheeryo Teamworkers! This is all the documentation for all our Go
-			code; both public and private. It is re-generated automatically using <a
-			href="https://github.com/teamwork/godocgen">the <code>godocgen</code>
-			tool</a>. Questions or problems can be reported to Martin.</p>
+<div id="homepage">
+	<p>Cheeryo Teamworkers! This is all the documentation for all our Go
+		code; both public and private. It is re-generated automatically using <a
+		href="https://github.com/teamwork/godocgen">the <code>godocgen</code>
+		tool</a>. Questions or problems can be reported to Martin.</p>
 
-		<ul>
-			{{ range $pkg := .contents }}
-				<li class="indent-{{ index $pkg 2 }}">
-					<a href="{{ index $pkg 0 }}/index.html">{{ index $pkg 0 }} – {{ index $pkg 1 }}</a>
-				</li>
+	<table>
+		<tbody>
+			{{ range $i, $pkg := .contents }}
+				<tr class="indent-{{ index $pkg 2 }}">
+					<td>
+						{{ if and (eq (index $pkg 2) "1") }}
+							<a href="" class="expand">▶</a>
+						{{ end }}
+						<a href="{{ index $pkg 0 }}/index.html">{{ index $pkg 0 }}</a>
+					</td>
+					<td>{{ index $pkg 1 }}</td>
+				</tr>
 			{{ end }}
-		</ul>
-	</div>
+		</body>
+	</table>
 </div>
 
-<!--
-<script type="text/javascript" src="/lib/godoc/jquery.js"></script>
-<script type="text/javascript" src="/lib/godoc/jquery.treeview.js"></script>
-<script type="text/javascript" src="/lib/godoc/jquery.treeview.edit.js"></script>
-<script>var goVersion = "go1.9";</script>
-<script type="text/javascript" src="/lib/godoc/godocs.js"></script>
--->
+<script src="/_static/jquery.js"></script>
+<script>
+	$(document).ready(function() {
+		$('tr:not(.indent-0, .indent-1)').css('display', 'none')
+
+		$('.expand').on('click', function(e) {
+			e.preventDefault()
+			expand = this.innerHTML == '▶'
+			this.innerHTML = this.innerHTML === '▼' ? '▶' : '▼'
+
+			row = $(this).closest('tr')
+			while (true) {
+				row = row.next()
+				if (row.is('.indent-0, .indent-1'))
+					break
+				row.css('display', expand ? '' : 'none')
+			}
+		})
+	})
+</script>
+
 </body>
 </html>
-

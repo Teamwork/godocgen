@@ -6,8 +6,10 @@
 -->
 {{with .PDoc}}
 	<script type='text/javascript'>
+/*
 	document.ANALYSIS_DATA = {{$.AnalysisData}};
 	document.CALLGRAPH = {{$.CallGraph}};
+*/
 	</script>
 	{{if $.IsMain}}
 		{{/* command documentation */}}
@@ -252,7 +254,7 @@
 					{{if .HasPkg}}
 						<tr>
 							<td class="pkg-name">
-								<a href="{{html .Path}}/{{modeQueryString $.Mode | html}}">{{html .Path}}</a>
+								<a href="{{html .Path}}/index.html{{modeQueryString $.Mode | html}}">{{html .Path}}</a>
 							</td>
 							<td class="pkg-synopsis">
 								{{html .Synopsis}}
@@ -262,7 +264,7 @@
 				{{else}}
 					<tr>
 						<td class="pkg-name" style="padding-left: {{multiply .Depth 20}}px;">
-							<a href="{{html .Path}}/{{modeQueryString $.Mode | html}}">{{html .Name}}</a>
+							<a href="{{html .Path}}/index.html{{modeQueryString $.Mode | html}}">{{html .Name}}</a>
 						</td>
 						<td class="pkg-synopsis">
 							{{html .Synopsis}}

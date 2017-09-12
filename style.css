@@ -1,10 +1,46 @@
-.indent-0 { }
-.indent-1 { margin-left: 2em; }
-.indent-2 { margin-left: 4em; }
-.indent-3 { margin-left: 6em; }
-.indent-4 { margin-left: 8em; }
-.indent-5 { margin-left: 10em; }
-.indent-6 { margin-left: 12em; }
+#homepage ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-lefT: 20px;
+}
+
+#homepage .indent-0 td:first-child {
+	padding-left: 1.1em;
+}
+
+#homepage .indent-1 td:first-child {
+	padding-left: 0em;
+	/*font-weight: bold;*/
+}
+#homepage .indent-2 td:first-child { padding-left: 2em; }
+#homepage .indent-3 td:first-child { padding-left: 4em; }
+#homepage .indent-4 td:first-child { padding-left: 6em; }
+#homepage .indent-5 td:first-child { padding-left: 8em; }
+#homepage .indent-6 td:first-child { padding-left: 10em; }
+
+#homepage ul li span {
+	display: inline-block;
+	min-width: 15em;
+}
+
+table {
+	border: none;
+	border-collapse: collapse
+}
+
+#homepage tr {
+	border-radius: 3px;
+}
+
+/*
+#homepage tbody tr:hover {
+	border-left: 2px solid #fffce5;
+}
+*/
+
+
+/*** Stolen from "godoc" template dir (but modified!) ***/
 
 
 body {
@@ -78,13 +114,13 @@ a:hover,
 }
 
 p, li {
-	max-width: 800px;
 	word-wrap: break-word;
 }
 p,
 pre,
 ul,
-ol {
+ol,
+table {
 	margin: 20px;
 }
 pre {
@@ -184,9 +220,6 @@ div#topbar {
 	overflow: hidden;
 }
 
-body {
-	text-align: center;
-}
 div#page {
 	width: 100%;
 }
@@ -204,11 +237,6 @@ div#page > .container {
 div#page.wide > .container,
 div#topbar.wide > .container {
 	max-width: none;
-}
-div#plusone {
-	float: right;
-	clear: right;
-	margin-top: 5px;
 }
 
 div#footer {
