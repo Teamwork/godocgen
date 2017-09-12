@@ -1,0 +1,50 @@
+#!/bin/sh
+
+set -euC
+
+# Get list of Go projects from API.
+get() {
+	local n=$1
+	curl -s \
+		-u "${GITHUB_USER:-$(whoami)}:${GITHUB_PASS:-}" \
+		-H 'Accept: application/vnd.github.mercy-preview+json' \
+		"https://api.github.com/organizations/4037476/repos?per_page=100&page=$n" |
+		jq -cjM '.[] | [.name, .language, .topics]' |
+		sed 's/\]\[/]\n[/g' |
+		grep -i '"go"' |
+		grep -oE '^\["[^"]+?"' |
+		tr -d '["' |
+		sort |
+		tr '\n' ' '
+
+}
+pkgs=""
+for n in 1 2 3; do
+	pkgs="$(get $n) $pkgs"
+done
+
+# Clone/update.
+(
+	mkdir -p ./_clone/src/github.com/teamwork
+	cd ./_clone/src/github.com/teamwork
+
+	total=$(echo "$pkgs" | tr ' ' '\n' | wc -l)
+	i=0
+	for pkg in $pkgs; do
+		i=$(($i + 1))
+
+		printf "%-8s" "($i/$total)"
+		if [ -d "$pkg" ]; then
+			echo "updating $pkg"
+			( cd $pkg && git pull --quiet )
+		else
+			echo "cloning $pkg"
+			git clone --quiet "git@github.com:Teamwork/$pkg" "$pkg"
+		fi
+	done
+)
+
+# Generate docs.
+export GOPATH="$(readlink -f .)/_clone"
+rm -r ./_site/*
+go run godocgen.go
