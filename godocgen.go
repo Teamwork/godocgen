@@ -347,12 +347,11 @@ func list(c Config) ([]packageT, error) {
 	// need to add them since we need it for the UI.
 	add := []packageT{}
 	for _, p := range packages {
+	loopstart:
 		up := filepath.Dir(p.FullImportPath)
 		if up == "." || up == c.RelativeTo {
 			continue
 		}
-
-		//fmt.Printf("%#v\n", p)
 
 		path := filepath.Join(c.Clonedir, "/src/", up, "/*.go")
 		goFiles, _ := filepath.Glob(path)
@@ -371,13 +370,17 @@ func list(c Config) ([]packageT, error) {
 		if found {
 			continue
 		}
-
-		add = append(add, packageT{
+		p = packageT{
 			Name:           filepath.Base(up),
 			FullImportPath: up,
 			RelImportPath:  removePathPrefix(up, c.RelativeTo),
 			Depth:          p.Depth - 1,
-		})
+		}
+
+		add = append(add, p)
+		// To-do the loop with "p" set to the newly added package to make sure
+		// that all dirs are added.
+		goto loopstart
 	}
 	packages = append(packages, add...)
 
@@ -390,6 +393,7 @@ func list(c Config) ([]packageT, error) {
 		if i+1 == len(packages) {
 			break
 		}
+		//fmt.Println(packages[i].Name, packages[i].Depth, " -> ", packages[i+1].Depth, packages[i+1].Name)
 		if packages[i].Depth != 1 {
 			continue
 		}
