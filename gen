@@ -1,13 +1,20 @@
 #!/bin/sh
+#
+# TODO: Integrate this in godocgen.go; this is a quick prototype.
 
 set -euC
 
 if [ "${1:-}" != "skipclone" ]; then
+	if [ "${GITHUB_USER:-}" = "" -o "${GITHUB_PASS:-}" = "" ]; then
+		echo "You need to set the GITHUB_USER and GITHUB_PASS environment variables."
+		exit 1
+	fi
+
 	# Get list of Go projects from API.
 	get() {
 		local n=$1
 		curl -s \
-			-u "${GITHUB_USER:-$(whoami)}:${GITHUB_PASS:-}" \
+			-u "$GITHUB_USER:$GITHUB_PASS" \
 			-H 'Accept: application/vnd.github.mercy-preview+json' \
 			"https://api.github.com/organizations/4037476/repos?per_page=100&page=$n" |
 			jq -cjM '.[] | [.name, .language, .topics]' |
@@ -20,7 +27,7 @@ if [ "${1:-}" != "skipclone" ]; then
 
 	}
 	pkgs=""
-	for n in 1 2 3; do
+	for n in 1 2 3 4; do
 		pkgs="$(get $n) $pkgs"
 	done
 
