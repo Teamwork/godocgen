@@ -45,6 +45,8 @@ body {
 	font-size: 16px;
 	background-color: #fff;
 	line-height: 1.3em;
+
+	max-width: 60em;
 }
 pre,
 code {
