@@ -8,8 +8,12 @@
 
 #homepage .indent-1 td:first-child {
 	padding-left: 0em;
-	/*font-weight: bold;*/
 }
+#homepage .indent-0 td:first-child,
+#homepage .indent-1 td:first-child {
+	padding-right: 1em;
+}
+
 #homepage .indent-2 td:first-child { padding-left: 2em; }
 #homepage .indent-3 td:first-child { padding-left: 4em; }
 #homepage .indent-4 td:first-child { padding-left: 6em; }

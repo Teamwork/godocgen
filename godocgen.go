@@ -29,8 +29,9 @@ var (
 			"libraries",
 			"Generic libraries that can be used by any project. Both public and private.",
 			[]string{
-				"cache", "database", "dlm", "flipout", "go-spamc", "httperr", "log",
-				"mailaddress", "test", "utils", "must", "reload", "tnef",
+				"cache", "database", "dlm", "flipout", "go-spamc", "httperr",
+				"log", "mailaddress", "test", "utils", "must", "reload", "tnef",
+				"geoip", "vat", "goamqp",
 			},
 			[]packageT{},
 		},
@@ -48,7 +49,7 @@ var (
 			"projects",
 			"Teamwork Projects-specific projects.",
 			[]string{
-				"TeamworkAPIInGO", "projects-api", "projects-webhooks", "projectsapigo",
+				"TeamworkAPIInGO", "projects-api", "projects-webhooks", "projectsapigo", "notification-server",
 			},
 			[]packageT{},
 		},
@@ -76,25 +77,23 @@ func main() {
 		scan = os.Args[2:]
 	}
 
-	if len(os.Args) > 1 && os.Args[1] != "home" {
-		packages, err := list(scan...)
+	packages, err := list(scan...)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot list packages: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, pkg := range packages {
+		err := writePackage(outdir, pkg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cannot list packages: %v\n", err)
+			fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg, err)
 			os.Exit(1)
 		}
+	}
 
-		for _, pkg := range packages {
-			err := writePackage(outdir, pkg)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg, err)
-				os.Exit(1)
-			}
-		}
-
-		if err := makeIndexes(outdir); err != nil {
-			fmt.Fprintf(os.Stderr, "could not generate index.html files: %v\n", err)
-			os.Exit(1)
-		}
+	if err := makeIndexes(outdir); err != nil {
+		fmt.Fprintf(os.Stderr, "could not generate index.html files: %v\n", err)
+		os.Exit(1)
 	}
 
 	if err := makeHome(outdir, scan); err != nil {
