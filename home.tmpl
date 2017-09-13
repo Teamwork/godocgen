@@ -16,10 +16,11 @@
 </div>
 
 <div id="homepage">
-	<p>Cheerio Teamworkers! This is all the documentation for all our Go
-		code; both public and private. It is re-generated automatically using <a
-		href="https://github.com/teamwork/godocgen">the <code>godocgen</code>
-		tool</a>. Questions or problems can be reported to Martin.</p>
+	<p>This is all the documentation for all our Go code; both public and private.
+		It is deployed automatically from
+		<a href="https://github.com/Teamwork/docs">the <code>docs</code> repo</a>
+		which is in turn generated automatically with
+		<a href="https://github.com/teamwork/godocgen">the <code>godocgen</code> tool</a>.</p>
 
 	{{ range $g := .groups }}
 		<h1>{{ $g.Name }}</h1>
@@ -29,10 +30,10 @@
 				{{ range $pkg := $g.Packages }}
 					<tr class="indent-{{ $pkg.Depth }}">
 						<td>
-							{{ if eq $pkg.Depth "1" }}
+							{{ if eq $pkg.Depth 1 }}
 								<a href="" class="expand">▶</a>
 							{{ end }}
-							<a href="{{ $pkg.Name }}/index.html">{{ $pkg.Name }}</a>
+							<a href="{{ $pkg.RelImportPath }}/index.html">{{ $pkg.Name }}</a>
 						</td>
 						<td>{{ $pkg.Doc }}</td>
 					</tr>

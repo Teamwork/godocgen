@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>{{ .pkgHead }} – {{ .mainTitle }}</title>
+	<title>{{ .pkg.Name }} – {{ .mainTitle }}</title>
 	<style>{{ .style }}</style>
 	<link rel="stylesheet" href="/_static/jquery.treeview.css">
 	<script type="text/javascript">window.initFuncs = [];</script>
@@ -19,8 +19,8 @@
 
 <div id="page" class="wide">
 	<div class="container">
-		<h1>Package {{.pkgHead}}</h1>
-		{{.godoc}}
+		<h1>Package {{ .pkg.RelImportPath }}</h1>
+		{{ .godoc }}
 	</div>
 </div>
 
