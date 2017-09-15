@@ -31,7 +31,7 @@
 					<tr class="indent-{{ $pkg.Depth }}">
 						<td>
 							{{ if eq $pkg.Depth 1 }}
-								<a href="" class="expand">▶</a>
+								<a href="" class="expand">▹</a>
 							{{ end }}
 							<a href="{{ $pkg.RelImportPath }}/index.html">{{ $pkg.Name }}</a>
 						</td>
@@ -50,8 +50,8 @@
 
 		$('.expand').on('click', function(e) {
 			e.preventDefault()
-			expand = this.innerHTML == '▶'
-			this.innerHTML = this.innerHTML === '▼' ? '▶' : '▼'
+			expand = this.innerHTML == '▹'
+			this.innerHTML = this.innerHTML === '▾' ? '▹' : '▾'
 
 			row = $(this).closest('tr')
 			while (true) {

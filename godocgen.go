@@ -27,7 +27,7 @@ var (
 			[]string{
 				"cache", "database", "dlm", "flipout", "go-spamc", "httperr",
 				"log", "mailaddress", "test", "utils", "must", "reload", "tnef",
-				"geoip", "vat", "goamqp",
+				"geoip", "vat", "goamqp", "israce", "validate", "mailcheckerc",
 			},
 			[]packageT{},
 		},
