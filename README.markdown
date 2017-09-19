@@ -9,7 +9,12 @@ Usage:
 4. `go run godocgen.go`.
 5. Optional to preview changes: `cd _site && python -mhttp.server`.
 6. Push update to `docs`:
-   `cd _site && git add -A && t clone git@github.com:Teamwork/doc.git _sitegit commit -am 'update' && git push`
+
+		cd _site
+		git add -A
+		git commit -am 'update'
+		git push
+
 7. Now take a moment to contemplate what a sterling job you've done in updating
    the https://tw-godoc.teamwork.com/ site while Travis deploys the update.
 
