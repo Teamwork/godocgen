@@ -80,32 +80,37 @@
 			{{end}}
 			</dl>
 			</div><!-- #manual-nav -->
+
 		{{if $.Examples}}
-		<div id="pkg-examples">
-			<h4>Examples</h4>
-			<dl>
-			{{range $.Examples}}
-			<dd><a class="exampleLink" href="#example_{{.Name}}">{{example_name .Name}}</a></dd>
-			{{end}}
-			</dl>
-		</div>
+			<div id="pkg-examples">
+				<h4>Examples</h4>
+				<dl>
+					{{range $.Examples}}
+						<dd><a class="exampleLink" href="#example_{{.Name}}">{{example_name .Name}}</a></dd>
+					{{end}}
+				</dl>
+			</div>
 		{{end}}
-		{{with .Filenames}}
-			<h4>Package files</h4>
-			<p>
-			<span style="font-size:90%">
-			{{range .}}
-				<a href="{{.|srcLink|html}}">{{.|filename|html}}</a>
+
+			{{with .Filenames}}
+				<h4>Package files</h4>
+				<p>
+					<span style="font-size:90%">
+						{{range .}}
+							<a href="https://github.com/Teamwork/cache/blob/master/{{.|filename|html}}">{{.|filename|html}}</a>
+						{{end}}
+					</span>
+				</p>
 			{{end}}
-			</span>
-			</p>
-		{{end}}
+
 		</div><!-- .expanded -->
 		</div><!-- #pkg-index -->
+
 		<div id="pkg-callgraph" class="toggle" style="display: none">
 		<div class="collapsed">
 			<h2 class="toggleButton" title="Click to show Internal Call Graph section">Internal call graph ▹</h2>
 		</div> <!-- .expanded -->
+
 		<div class="expanded">
 			<h2 class="toggleButton" title="Click to hide Internal Call Graph section">Internal call graph ▾</h2>
 			<p>
@@ -138,6 +143,7 @@
 			<ul style="margin-left: 0.5in" id="callgraph-0" class="treeview"></ul>
 		</div>
 		</div> <!-- #pkg-callgraph -->
+
 		{{with .Consts}}
 			<h2 id="pkg-constants">Constants</h2>
 			{{range .}}
@@ -216,28 +222,19 @@
 		{{end}}
 	{{end}}
 {{end}}
+
 {{with .PAst}}
 	{{range $filename, $ast := .}}
 		<a href="{{$filename|srcLink|html}}">{{$filename|filename|html}}</a>:<pre>{{node_html $ $ast false}}</pre>
 	{{end}}
 {{end}}
+
 {{with .Dirs}}
 	{{/* DirList entries are numbers and strings - no need for FSet */}}
 	{{if $.PDoc}}
 		<h2 id="pkg-subdirectories">Subdirectories</h2>
 	{{end}}
-	{{if eq $.Dirname "/src"}}
-		<div id="manual-nav">
-			<dl>
-				<dt><a href="#stdlib">Standard library</a></dt>
-				<dt><a href="#other">Other packages</a></dt>
-				<dd><a href="#subrepo">Sub-repositories</a></dd>
-				<dd><a href="#community">Community</a></dd>
-			</dl>
-		</div>
-		<h2 id="stdlib">Standard library</h2>
-		<img class="gopher" src="/doc/gopher/pkg.png"/>
-	{{end}}
+
 	<div class="pkg-dir">
 		<table>
 			<tr>
@@ -274,37 +271,4 @@
 			{{end}}
 		</table>
 	</div>
-	{{if eq $.Dirname "/src"}}
-	<h2 id="other">Other packages</h2>
-	<h3 id="subrepo">Sub-repositories</h3>
-	<p>
-	These packages are part of the Go Project but outside the main Go tree.
-	They are developed under looser <a href="/doc/go1compat">compatibility requirements</a> than the Go core.
-	Install them with "<a href="/cmd/go/#hdr-Download_and_install_packages_and_dependencies">go get</a>".
-	</p>
-	<ul>
-		<li><a href="//godoc.org/golang.org/x/benchmarks">benchmarks</a> — benchmarks to measure Go as it is developed.</li>
-		<li><a href="//godoc.org/golang.org/x/blog">blog</a> — <a href="//blog.golang.org">blog.golang.org</a>'s implementation.</li>
-		<li><a href="//godoc.org/golang.org/x/build">build</a> — <a href="//build.golang.org">build.golang.org</a>'s implementation.</li>
-		<li><a href="//godoc.org/golang.org/x/crypto">crypto</a> — additional cryptography packages.</li>
-		<li><a href="//godoc.org/golang.org/x/debug">debug</a> — an experimental debugger for Go.</li>
-		<li><a href="//godoc.org/golang.org/x/image">image</a> — additional imaging packages.</li>
-		<li><a href="//godoc.org/golang.org/x/mobile">mobile</a> — experimental support for Go on mobile platforms.</li>
-		<li><a href="//godoc.org/golang.org/x/net">net</a> — additional networking packages.</li>
-		<li><a href="//godoc.org/golang.org/x/sys">sys</a> — packages for making system calls.</li>
-		<li><a href="//godoc.org/golang.org/x/text">text</a> — packages for working with text.</li>
-		<li><a href="//godoc.org/golang.org/x/tools">tools</a> — godoc, goimports, gorename, and other tools.</li>
-		<li><a href="//godoc.org/golang.org/x/tour">tour</a> — <a href="//tour.golang.org">tour.golang.org</a>'s implementation.</li>
-		<li><a href="//godoc.org/golang.org/x/exp">exp</a> — experimental and deprecated packages (handle with care; may change without warning).</li>
-	</ul>
-	<h3 id="community">Community</h3>
-	<p>
-	These services can help you find Open Source packages provided by the community.
-	</p>
-	<ul>
-		<li><a href="//godoc.org">GoDoc</a> - a package index and search engine.</li>
-		<li><a href="http://go-search.org">Go Search</a> - a code search engine.</li>
-		<li><a href="/wiki/Projects">Projects at the Go Wiki</a> - a curated list of Go projects.</li>
-	</ul>
-	{{end}}
 {{end}}

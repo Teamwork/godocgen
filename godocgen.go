@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -67,31 +68,32 @@ func main() {
 		}
 		return []group{g}, nil
 	})
-
 	if err := sconfig.Parse(&c, "./config", nil); err != nil {
 		fmt.Fprintf(os.Stderr, "cannot load config: %v\n", err)
 		os.Exit(1)
 	}
 
-	if c.Pass == "" {
-		c.Pass = os.Getenv("GITHUB_PASS")
+	if len(os.Args) > 1 && os.Args[1] == "skipclone" {
 		if c.Pass == "" {
-			fmt.Fprintf(os.Stderr,
-				"No password set; please set 'pass' in config or use the GITHUB_PASS env variable\n")
+			c.Pass = os.Getenv("GITHUB_PASS")
+			if c.Pass == "" {
+				fmt.Fprintf(os.Stderr,
+					"No password set; please set 'pass' in config or use the GITHUB_PASS env variable\n")
+				os.Exit(1)
+			}
+		}
+
+		// Load GitHub repos.
+		repos, err := getRepos(c)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cannot get repo list: %v\n", err)
 			os.Exit(1)
 		}
-	}
 
-	// Load GitHub repos.
-	repos, err := getRepos(c)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "cannot get repo list: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := updateRepos(c, repos); err != nil {
-		fmt.Fprintf(os.Stderr, "cannot update repo: %v\n", err)
-		os.Exit(1)
+		if err := updateRepos(c, repos); err != nil {
+			fmt.Fprintf(os.Stderr, "cannot update repo: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	// Setup _site
@@ -167,6 +169,12 @@ func updateRepos(c Config, repos []Repository) error {
 	return nil
 }
 
+// Rewrite source links from:
+//  <a href="/src/target/redis.go?s=1187:1246#L39">
+//to:
+//  <a href="https://github.com/Teamwork/cache/blob/master/redis.go#L39">
+var reRewriteSource = regexp.MustCompile(`<a href="/src/target/(.*?\.go)\?s=[0-9:]+#(L\d+)">`)
+
 // Write package documentation.
 func writePackage(c Config, pkg packageT) error {
 	doc, err := godoc(pkg.FullImportPath)
@@ -182,6 +190,21 @@ func writePackage(c Config, pkg packageT) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: This will be off by 10! See srcPosLinkFunc() in the godoc source:
+	//
+	// if low < high {
+	// 	fmt.Fprintf(&buf, "?s=%d:%d", low, high) // no need for URL escaping
+	// 	// if we have a selection, position the page
+	// 	// such that the selection is a bit below the top
+	// 	line -= 10
+	// 	if line < 1 {
+	// 		line = 1
+	// 	}
+	// }
+	//
+	// This looks really confusing on GitHub.
+	doc = reRewriteSource.ReplaceAllString(doc, `<a href="https://github.com/Teamwork/`+pkg.Name+`/blob/master/$1#$2">`)
 
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "package.tmpl", map[string]interface{}{
@@ -207,10 +230,10 @@ func writePackage(c Config, pkg packageT) error {
 // godoc runs godoc on a package and gets the result.
 func godoc(path string) (string, error) {
 	// https://go.googlesource.com/tools/+/2d19ab38faf14664c76088411c21bf4fafea960b/godoc/static/
-	cmd := exec.Command("godoc", "-html", "-templates", "godoc_tpl", path)
+	cmd := exec.Command("godoc", "-html", "-templates", "godoc_tpl", "-analysis", "type,pointer", path)
 	out, err := cmd.Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not run godoc: %v", err)
 	}
 
 	// Remove the first line, which is always:
