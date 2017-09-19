@@ -97,7 +97,11 @@ func main() {
 	// Setup _site
 	abs, _ := os.Getwd()
 	os.Setenv("GOPATH", filepath.Join(abs, "/", c.Clonedir))
-	os.RemoveAll(c.Outdir)
+	// TODO: exclude .git
+	//rm, _ := filepath.Glob(filepath.Join(c.Outdir, "/*"))
+	//for _, p := range rm {
+	//	os.RemoveAll(p)
+	//}
 	fileutil.CopyTree("./_static", c.Outdir+"/_static", nil)
 
 	packages, err := list(c)
@@ -142,6 +146,7 @@ func updateRepos(c Config, repos []Repository) error {
 			os.Chdir(d)
 			_, _, err := run("git", "pull", "--quiet")
 			os.Chdir(orig)
+
 			if err != nil {
 				return err
 			}
@@ -229,7 +234,7 @@ func makeIndexes(c Config) error {
 			return nil
 		}
 
-		if path == "./_site" {
+		if path == "./_site" { // TODO: config
 			return nil
 		}
 
