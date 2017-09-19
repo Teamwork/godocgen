@@ -1,3 +1,4 @@
+// Package godocgen generate self-contained HTML documentation with godoc.
 package main
 
 import (
@@ -73,7 +74,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(os.Args) > 1 && os.Args[1] == "skipclone" {
+	if len(os.Args) == 1 || os.Args[1] != "skipclone" {
 		if c.Pass == "" {
 			c.Pass = os.Getenv("GITHUB_PASS")
 			if c.Pass == "" {
