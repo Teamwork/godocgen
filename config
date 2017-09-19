@@ -1,0 +1,63 @@
+organisation teamwork 4037476
+
+outdir ./_site
+clonedir ./_clone
+scan github.com/teamwork/...
+relative-to github.com/teamwork
+
+main-title Teamwork Go doc
+
+user Carpetsmoker
+pass 
+
+group libraries
+	Generic libraries that can be used by any project. Both public and private.
+	---
+	cache
+	database
+	dlm
+	flipout
+	geoip
+	go-spamc
+	goamqp
+	httperr
+	israce
+	log
+	mailaddress
+	mailcheckerc
+	must
+	reload
+	test
+	tnef
+	utils
+	validate
+	vat
+
+group Desk
+	Teamwork Desk-specific projects
+	---
+	desk
+	deskactivity
+	deskdocs
+	deske2e
+	deskedge
+	deskimporter
+	desksentiment
+	desksockets
+	desktwitter
+	deskwebhooks
+	elasticdesk
+	mailchecker
+
+group Projects
+	Teamwork Projects-specific projects.
+	---
+	TeamworkAPIInGO
+	notification-server
+	projects-api
+	projects-webhooks
+	projectsapigo
+
+group Other
+	Everything not in one of the other groups.
+	---

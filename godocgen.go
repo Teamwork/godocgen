@@ -2,68 +2,26 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
+
+	"github.com/teamwork/utils/fileutil"
+
+	"arp242.net/sconfig"
 )
 
 var (
 	templates = template.Must(template.ParseFiles("package.tmpl", "index.tmpl", "home.tmpl"))
 	style     = mustRead("./style.css")
-
-	groups = []struct {
-		Name, Desc string
-		Projects   []string
-		Packages   []packageT
-	}{
-		{
-			"Libraries",
-			"Generic libraries that can be used by any project. Both public and private.",
-			[]string{
-				"cache", "database", "dlm", "flipout", "go-spamc", "httperr",
-				"log", "mailaddress", "test", "utils", "must", "reload", "tnef",
-				"geoip", "vat", "goamqp", "israce", "validate", "mailcheckerc",
-			},
-			[]packageT{},
-		},
-		{
-			"Desk",
-			"Teamwork Desk-specific projects",
-			[]string{
-				"desk", "deskactivity", "deskdocs", "deske2e", "deskedge",
-				"deskimporter", "desksentiment", "desksockets", "desktwitter",
-				"deskwebhooks", "elasticdesk", "mailchecker",
-			},
-			[]packageT{},
-		},
-		{
-			"Projects",
-			"Teamwork Projects-specific projects.",
-			[]string{
-				"TeamworkAPIInGO", "projects-api", "projects-webhooks", "projectsapigo", "notification-server",
-			},
-			[]packageT{},
-		},
-		{
-			"Other",
-			"Everything not in one of the other groups.",
-			[]string{},
-			[]packageT{},
-		},
-		{
-			"Deprecated",
-			"Old stuff; don't use unless you really know what you're doing",
-			[]string{
-				"TeamworkDeskTool", "go-modules", "email",
-			},
-			[]packageT{},
-		},
-	}
 )
 
 type packageT struct {
@@ -74,25 +32,65 @@ type packageT struct {
 	RelImportPath  string // Relative import path (may be the same as Full)
 }
 
+type group struct {
+	Name, Desc string
+	Projects   []string
+	Packages   []packageT
+}
+
 // Config for godocgen.
 type Config struct {
-	Outdir     string
-	Clonedir   string
-	Scan       []string
-	RelativeTo string
-	MainTitle  string // Title to add in the header, <title> tag, and some other places.
-
-	packages []packageT
+	Organisation []string
+	Outdir       string
+	Clonedir     string
+	Scan         []string
+	RelativeTo   string
+	MainTitle    string
+	User         string
+	Pass         string
+	Groups       []group
+	packages     []packageT
 }
 
 func main() {
-	c := Config{
-		Outdir:     "./_site",
-		Clonedir:   "./_clone",
-		Scan:       []string{"github.com/teamwork/..."},
-		RelativeTo: "github.com/teamwork",
-		MainTitle:  "Teamwork Go doc",
+	// Parse config.
+	var c Config
+	sconfig.RegisterType("[]main.group", func(v []string) (interface{}, error) {
+		g := group{Name: v[0]}
+
+		for i := range v {
+			if v[i] == "---" {
+				g.Projects = v[i+1:]
+				break
+			}
+			g.Desc += v[i] + " "
+		}
+		return []group{g}, nil
+	})
+
+	if err := sconfig.Parse(&c, "./config", nil); err != nil {
+		fmt.Fprintf(os.Stderr, "cannot load config: %v\n", err)
+		os.Exit(1)
 	}
+
+	// Load GitHub repos.
+	repos, err := getRepos(c)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot get repo list: %v\n", err)
+		os.Exit(1)
+	}
+
+	repos = repos[0:3] // XXX
+	if err := updateRepos(c, repos); err != nil {
+		fmt.Fprintf(os.Stderr, "cannot update repo: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Setup _site
+	abs, _ := os.Getwd()
+	os.Setenv("GOPATH", filepath.Join(abs, "/", c.Clonedir))
+	os.RemoveAll(c.Outdir)
+	fileutil.CopyTree("./_static", c.Outdir+"/_static", nil)
 
 	packages, err := list(c)
 	if err != nil {
@@ -116,7 +114,40 @@ func main() {
 		fmt.Fprintf(os.Stderr, "could not generate index.html files: %v\n", err)
 		os.Exit(1)
 	}
+}
 
+// Clone/update repos.
+func updateRepos(c Config, repos []Repository) error {
+	orig, _ := os.Getwd()
+	defer func() { os.Chdir(orig) }()
+
+	root := filepath.Join(c.Clonedir, "/src/", c.Organisation[0])
+	os.MkdirAll(root, 0700)
+
+	for i, r := range repos {
+		fmt.Printf(" %v/%v ", i+1, len(repos)+1)
+
+		d := filepath.Join(root, "/", r.Name)
+		if s, err := os.Stat(d); err == nil && s.IsDir() {
+			fmt.Printf("updating %v                 \r", r.Name)
+			os.Chdir(d)
+			_, _, err := run("git", "pull", "--quiet")
+			if err != nil {
+				return err
+			}
+		} else {
+			fmt.Printf("cloning %v                  \r", r.Name)
+			os.Chdir(root)
+			_, _, err := run("git", "clone", "--depth=1", "--quiet", "git@github.com:Teamwork/"+r.Name)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
+	fmt.Printf("\n")
+	return nil
 }
 
 // Write package documentation.
@@ -209,18 +240,19 @@ func makeHome(c Config, packages []packageT) error {
 	for _, pkg := range packages {
 		found := false
 	groups:
-		for i, g := range groups {
+		for i, g := range c.Groups {
 			for _, project := range g.Projects {
 				if strings.HasPrefix(pkg.RelImportPath, project) {
-					groups[i].Packages = append(groups[i].Packages, pkg)
+					c.Groups[i].Packages = append(c.Groups[i].Packages, pkg)
 					found = true
 					break groups
 				}
 			}
 		}
 
+		// TODO: config value
 		if !found {
-			groups[3].Packages = append(groups[3].Packages, pkg)
+			c.Groups[3].Packages = append(c.Groups[3].Packages, pkg)
 		}
 	}
 
@@ -233,7 +265,7 @@ func makeHome(c Config, packages []packageT) error {
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "home.tmpl", map[string]interface{}{
 		"style":     template.CSS(style),
-		"groups":    groups,
+		"groups":    c.Groups,
 		"mainTitle": c.MainTitle,
 	})
 	if err != nil {
@@ -403,4 +435,95 @@ func list(c Config) ([]packageT, error) {
 	}
 
 	return packages, nil
+}
+
+// Repository in git.
+type Repository struct {
+	Name     string    `json:"name"`
+	Language string    `json:"language"`
+	PushedAt time.Time `json:"pushed_at"`
+	Topics   []string  `json:"topics"`
+}
+
+type requestArgs struct {
+	method, url string
+	header      http.Header
+}
+
+func request(c Config, scan interface{}, args requestArgs) error {
+	client := http.Client{Timeout: 10 * time.Second}
+
+	req, err := http.NewRequest(args.method, args.url, nil)
+	if err != nil {
+		return err
+	}
+	if args.header != nil {
+		req.Header = args.header
+	}
+
+	req.SetBasicAuth(c.User, c.Pass)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	//fmt.Printf("%v\n", string(data))
+	return json.Unmarshal(data, scan)
+}
+
+// InStringSlice reports whether str is within list
+func InStringSlice(list []string, str string) bool {
+	for _, item := range list {
+		if item == str {
+			return true
+		}
+	}
+	return false
+}
+
+// Get all Go repos.
+func getRepos(c Config) ([]Repository, error) {
+	var allRepos []Repository
+
+	page := 1
+	for {
+		fmt.Println(page)
+		var repos []Repository
+		err := request(c, &repos, requestArgs{
+			method: http.MethodGet,
+			url:    fmt.Sprintf("https://api.github.com/organizations/"+c.Organisation[1]+"/repos?per_page=100&page=%v", page),
+			header: map[string][]string{
+				"Accept": {"application/vnd.github.mercy-preview+json"},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, r := range repos {
+			if r.Language == "Go" || InStringSlice(r.Topics, "go") || InStringSlice(r.Topics, "golang") {
+				allRepos = append(allRepos, r)
+			}
+		}
+
+		// XXX
+		if true { // len(repos) < 100 || len(repos) == 0 {
+			break
+		}
+
+		page += 1
+	}
+
+	sort.Slice(allRepos, func(i int, j int) bool {
+		return allRepos[i].Name < allRepos[j].Name
+	})
+
+	return allRepos, nil
 }
