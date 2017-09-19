@@ -2,14 +2,15 @@
 
 Usage:
 
-1. `git clone git@github.com:Teamwork/docs.git _site`.
-2. Edit `config` to suit your needs; specifically, you may want to add some
+1. `git clone git@github.com:Teamwork/godocgen.git && cd godocgen`
+2. `git clone git@github.com:Teamwork/docs.git _site`.
+3. Edit `config` to suit your needs; specifically, you may want to add some
    repos to a group (e.g. `Libraries` or `Projects`).
-3. `go run godocgen.go`.
-4. Optional to preview changes: `cd _site && python -mhttp.server`.
-5. Push update to `docs`:
+4. `go run godocgen.go`.
+5. Optional to preview changes: `cd _site && python -mhttp.server`.
+6. Push update to `docs`:
    `cd _site && git add -A && t clone git@github.com:Teamwork/doc.git _sitegit commit -am 'update' && git push`
-4. Now take a moment to contemplate what a sterling job you've done in updating
+7. Now take a moment to contemplate what a sterling job you've done in updating
    the https://tw-godoc.teamwork.com/ site while Travis deploys the update.
 
 Only repositories with the GitHub "language" attribute set to "Go" will be
