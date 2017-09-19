@@ -73,6 +73,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	if c.Pass == "" {
+		c.Pass = os.Getenv("GITHUB_PASS")
+		if c.Pass == "" {
+			fmt.Fprintf(os.Stderr,
+				"No password set; please set 'pass' in config or use the GITHUB_PASS env variable\n")
+			os.Exit(1)
+		}
+	}
+
 	// Load GitHub repos.
 	repos, err := getRepos(c)
 	if err != nil {
@@ -80,7 +89,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	repos = repos[0:3] // XXX
 	if err := updateRepos(c, repos); err != nil {
 		fmt.Fprintf(os.Stderr, "cannot update repo: %v\n", err)
 		os.Exit(1)
@@ -119,19 +127,21 @@ func main() {
 // Clone/update repos.
 func updateRepos(c Config, repos []Repository) error {
 	orig, _ := os.Getwd()
+	orig, _ = filepath.Abs(orig)
 	defer func() { os.Chdir(orig) }()
 
-	root := filepath.Join(c.Clonedir, "/src/", c.Organisation[0])
+	root := filepath.Join(c.Clonedir, "/src/github.com/", c.Organisation[0])
 	os.MkdirAll(root, 0700)
 
 	for i, r := range repos {
-		fmt.Printf(" %v/%v ", i+1, len(repos)+1)
+		fmt.Printf(" %v/%v ", i+1, len(repos))
 
 		d := filepath.Join(root, "/", r.Name)
 		if s, err := os.Stat(d); err == nil && s.IsDir() {
 			fmt.Printf("updating %v                 \r", r.Name)
 			os.Chdir(d)
 			_, _, err := run("git", "pull", "--quiet")
+			os.Chdir(orig)
 			if err != nil {
 				return err
 			}
@@ -139,6 +149,8 @@ func updateRepos(c Config, repos []Repository) error {
 			fmt.Printf("cloning %v                  \r", r.Name)
 			os.Chdir(root)
 			_, _, err := run("git", "clone", "--depth=1", "--quiet", "git@github.com:Teamwork/"+r.Name)
+			os.Chdir(orig)
+
 			if err != nil {
 				return err
 			}
@@ -492,9 +504,11 @@ func InStringSlice(list []string, str string) bool {
 func getRepos(c Config) ([]Repository, error) {
 	var allRepos []Repository
 
+	fmt.Printf("fetching repos from GitHub ... ")
+
 	page := 1
 	for {
-		fmt.Println(page)
+		fmt.Printf("%v ", page)
 		var repos []Repository
 		err := request(c, &repos, requestArgs{
 			method: http.MethodGet,
@@ -509,18 +523,23 @@ func getRepos(c Config) ([]Repository, error) {
 
 		for _, r := range repos {
 			if r.Language == "Go" || InStringSlice(r.Topics, "go") || InStringSlice(r.Topics, "golang") {
-				allRepos = append(allRepos, r)
+
+				// TODO: Don't do this on initial clone
+				// TODO: config!
+				if r.PushedAt.After(time.Now().Add(-48 * time.Hour)) {
+					allRepos = append(allRepos, r)
+				}
 			}
 		}
 
-		// XXX
-		if true { // len(repos) < 100 || len(repos) == 0 {
+		if len(repos) < 100 || len(repos) == 0 {
 			break
 		}
 
-		page += 1
+		page++
 	}
 
+	fmt.Println(" done")
 	sort.Slice(allRepos, func(i int, j int) bool {
 		return allRepos[i].Name < allRepos[j].Name
 	})
