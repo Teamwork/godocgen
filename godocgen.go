@@ -156,7 +156,8 @@ func updateRepos(c Config, repos []Repository) error {
 		} else {
 			fmt.Printf("cloning %v                  \r", r.Name)
 			os.Chdir(root)
-			_, _, err := run("git", "clone", "--depth=1", "--quiet", "git@github.com:Teamwork/"+r.Name)
+			//_, _, err := run("git", "clone", "--depth=1", "--quiet", "git@github.com:Teamwork/"+r.Name)
+			_, _, err := run("git", "clone", "--depth=1", "--quiet", "https://github.com/Teamwork/"+r.Name)
 			os.Chdir(orig)
 
 			if err != nil {
