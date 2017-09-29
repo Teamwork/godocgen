@@ -222,11 +222,8 @@ func writePackage(c Config, pkg packageT) error {
 	if err := buf.Flush(); err != nil {
 		return err
 	}
-	if err := fp.Close(); err != nil {
-		return err
-	}
 
-	return nil
+	return fp.Close()
 }
 
 // godoc runs godoc on a package and gets the result.
@@ -317,11 +314,8 @@ func makeHome(c Config, packages []packageT) error {
 	if err := buf.Flush(); err != nil {
 		return err
 	}
-	if err := fp.Close(); err != nil {
-		return err
-	}
 
-	return nil
+	return fp.Close()
 }
 
 func makeIndex(c Config, path string) error {
@@ -350,23 +344,25 @@ func makeIndex(c Config, path string) error {
 	if err := buf.Flush(); err != nil {
 		return err
 	}
-	if err := fp.Close(); err != nil {
-		return err
-	}
 
-	return nil
+	return fp.Close()
 }
 
 func run(cmd ...string) (stdout []string, stderr []string, err error) {
 	r := exec.Command(cmd[0], cmd[1:]...)
 
-	// TODO: Read stderr too
-	out, err := r.Output()
-	if err != nil {
-		return nil, nil, err
-	}
+	outPipe, _ := r.StdoutPipe()
+	errPipe, _ := r.StderrPipe()
+	defer outPipe.Close()
+	defer errPipe.Close()
 
-	return strings.Split(strings.Trim(string(out), "\n"), "\n"), nil, nil
+	err = r.Start()
+
+	out, _ := ioutil.ReadAll(outPipe)
+	outerr, _ := ioutil.ReadAll(errPipe)
+	return strings.Split(strings.Trim(string(out), "\n"), "\n"),
+		strings.Split(strings.Trim(string(outerr), "\n"), "\n"),
+		err
 }
 
 func removePathPrefix(full, remove string) string {
