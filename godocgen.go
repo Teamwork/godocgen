@@ -552,9 +552,9 @@ func getRepos(c Config) ([]Repository, error) {
 
 				// TODO: Don't do this on initial clone
 				// TODO: config!
-				if r.PushedAt.After(time.Now().Add(-48 * time.Hour)) {
-					allRepos = append(allRepos, r)
-				}
+				//if r.PushedAt.After(time.Now().Add(-48 * time.Hour)) {
+				allRepos = append(allRepos, r)
+				//}
 			}
 		}
 
