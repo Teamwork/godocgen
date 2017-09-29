@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/teamwork/utils/fileutil"
-
 	"arp242.net/sconfig"
+	"github.com/teamwork/utils/fileutil"
+	"github.com/teamwork/utils/sliceutil"
 )
 
 var (
@@ -51,7 +51,9 @@ type Config struct {
 	User         string
 	Pass         string
 	Groups       []group
-	packages     []packageT
+	Exclude      []string
+
+	packages []packageT
 }
 
 func main() {
@@ -142,6 +144,12 @@ func updateRepos(c Config, repos []Repository) error {
 
 	for i, r := range repos {
 		fmt.Printf(" %v/%v ", i+1, len(repos))
+
+		if sliceutil.InStringSlice(c.Exclude, r.Name) {
+			fmt.Printf("excluding %v                 \r", r.Name)
+			time.Sleep(3 * time.Second)
+			continue
+		}
 
 		d := filepath.Join(root, "/", r.Name)
 		if s, err := os.Stat(d); err == nil && s.IsDir() {

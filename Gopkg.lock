@@ -10,12 +10,12 @@
 [[projects]]
   branch = "fileutil"
   name = "github.com/teamwork/utils"
-  packages = ["fileutil"]
+  packages = ["fileutil","sliceutil"]
   revision = "dda40d5a953c5bfcde6ec980a04291a8a30602a8"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f75d054077af0b93dd2c1a3a3e579ad13d27f93c8bf1f7a187f30dbd890ac81c"
+  inputs-digest = "d6ecc436d6823544ea8a344259b0f7a6a7d2b441af5e5cd892c945883db56ee2"
   solver-name = "gps-cdcl"
   solver-version = 1

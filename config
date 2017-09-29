@@ -18,9 +18,13 @@ outdir ./_site
 # Clone GitHub repos.
 clonedir ./_clone
 
-# GitHub credentials;
+# GitHub credentials. Will also be loaded from environment (GITHUB_USER,
+# GITHUB_PASS).
 user Carpetsmoker
 pass  # export GITHUB_PASS
+
+# Exclude some repos; they will not be cloned.
+exclude strut
 
 # Group defintion; first word is the group name, then any number of words for
 # the description until "---", after which each word will be a package name to
@@ -42,7 +46,6 @@ group Libraries
 	mailcheckerc
 	must
 	reload
-	strut
 	test
 	tnef
 	utils
