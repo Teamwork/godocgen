@@ -42,6 +42,7 @@ group Libraries
 	mailcheckerc
 	must
 	reload
+	strut
 	test
 	tnef
 	utils
