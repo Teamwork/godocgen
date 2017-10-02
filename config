@@ -46,6 +46,7 @@ group Libraries
 	mailcheckerc
 	must
 	reload
+	s3pp
 	test
 	tnef
 	utils
