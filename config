@@ -34,6 +34,7 @@ group Libraries
 	---
 	cache
 	database
+	datadog
 	dlm
 	flipout
 	geoip
