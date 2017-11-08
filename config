@@ -23,9 +23,6 @@ clonedir ./_clone
 user Carpetsmoker
 pass  # export GITHUB_PASS
 
-# Exclude some repos; they will not be cloned.
-exclude strut
-
 # Group defintion; first word is the group name, then any number of words for
 # the description until "---", after which each word will be a package name to
 # be included in this group.
@@ -45,6 +42,7 @@ group Libraries
 	log
 	mailaddress
 	mailcheckerc
+	middleware
 	must
 	reload
 	s3pp
