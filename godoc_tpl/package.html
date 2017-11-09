@@ -92,16 +92,14 @@
 			</div>
 		{{end}}
 
-			{{with .Filenames}}
-				<h4>Package files</h4>
-				<p>
-					<span style="font-size:90%">
-						{{range .}}
-							<a href="https://github.com/Teamwork/cache/blob/master/{{.|filename|html}}">{{.|filename|html}}</a>
-						{{end}}
-					</span>
-				</p>
-			{{end}}
+        <h4>Package files</h4>
+        <p>
+            <span style="font-size:90%">
+                {{range .Filenames}}
+                    <a href="source://{{.|html}}">{{.|filename|html}}</a>
+                {{end}}
+            </span>
+        </p>
 
 		</div><!-- .expanded -->
 		</div><!-- #pkg-index -->

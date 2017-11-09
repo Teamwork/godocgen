@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -185,6 +186,8 @@ func updateRepos(c Config, repos []Repository) error {
 //  <a href="https://github.com/Teamwork/cache/blob/master/redis.go#L39">
 var reRewriteSource = regexp.MustCompile(`<a href="/src/target/(.*?\.go)\?s=[0-9:]+#(L\d+)">`)
 
+var reRewriteFileSource = regexp.MustCompile(`<a href="source://(.*?.go)">`)
+
 // Write package documentation.
 func writePackage(c Config, pkg packageT) error {
 	doc, err := godoc(pkg.FullImportPath)
@@ -201,20 +204,35 @@ func writePackage(c Config, pkg packageT) error {
 		return err
 	}
 
-	// TODO: This will be off by 10! See srcPosLinkFunc() in the godoc source:
+	// Fix source links. By default they're offset by 10; from srcPosLinkFunc()
+	// in the godoc source:
 	//
-	// if low < high {
-	// 	fmt.Fprintf(&buf, "?s=%d:%d", low, high) // no need for URL escaping
-	// 	// if we have a selection, position the page
-	// 	// such that the selection is a bit below the top
-	// 	line -= 10
-	// 	if line < 1 {
-	// 		line = 1
-	// 	}
-	// }
+	//   if low < high {
+	//       fmt.Fprintf(&buf, "?s=%d:%d", low, high) // no need for URL escaping
+	//       // if we have a selection, position the page
+	//       // such that the selection is a bit below the top
+	//       line -= 10
+	//       if line < 1 {
+	//           line = 1
+	//       }
+	//   }
 	//
 	// This looks really confusing on GitHub.
-	doc = reRewriteSource.ReplaceAllString(doc, `<a href="https://github.com/Teamwork/`+pkg.Name+`/blob/master/$1#$2">`)
+	doc = reRewriteSource.ReplaceAllStringFunc(doc, func(v string) string {
+		match := reRewriteSource.FindAllStringSubmatch(v, -1)[0]
+		line, _ := strconv.ParseInt(match[2][1:], 10, 64)
+		dir := strings.Replace(pkg.RelImportPath, pkg.Name, "", 1)
+		return fmt.Sprintf(`<a href="https://github.com/Teamwork/%v/blob/master/%v%v#L%v">`,
+			pkg.RelImportPath, dir, match[1], line+10)
+	})
+
+	// Rewrite links to source files
+	doc = reRewriteFileSource.ReplaceAllStringFunc(doc, func(v string) string {
+		match := reRewriteFileSource.FindAllStringSubmatch(v, -1)[0]
+		s := strings.Split(match[1], "/")
+		return fmt.Sprintf(`<a href="https://github.com/Teamwork/%v/blob/master/%v">`,
+			s[2], strings.Join(s[3:len(s)], "/"))
+	})
 
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "package.tmpl", map[string]interface{}{
