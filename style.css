@@ -12,6 +12,7 @@
 #homepage .indent-0 td:first-child,
 #homepage .indent-1 td:first-child {
 	padding-right: 1em;
+    min-width: 13em;
 }
 
 #homepage .indent-2 td:first-child { padding-left: 2em; }
