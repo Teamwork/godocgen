@@ -209,7 +209,7 @@ function setupInlinePlayground() {
 			code.on('keyup', resize);
 			code.keyup(); // resize now.
 		};
-		
+
 		// If example already visible, set up playground now.
 		if ($(el).is(':visible')) {
 			setup();
@@ -324,14 +324,6 @@ function personalizeInstallInstructions() {
   window.location = download;
 }
 
-function updateVersionTags() {
-  var v = window.goVersion;
-  if (/^go[0-9.]+$/.test(v)) {
-    $(".versionTag").empty().text(v);
-    $(".whereTag").hide();
-  }
-}
-
 function addPermalinks() {
   function addPermalink(source, parent) {
     var id = source.attr("id");
@@ -375,7 +367,6 @@ $(document).ready(function() {
   setupCallgraphs();
   toggleHash();
   personalizeInstallInstructions();
-  updateVersionTags();
 
   // godoc.html defines window.initFuncs in the <head> tag, and root.html and
   // codewalk.js push their on-page-ready functions to the list.

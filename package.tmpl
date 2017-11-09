@@ -21,10 +21,12 @@
 	<div class="container">
 		<h1>Package {{ .pkg.Name }}</h1>
 		{{ .godoc }}
+        <div id="footer">Generated on {{.now}} from commit
+            {{/* TODO: Link won't work for subpackages */}}
+            <a href="https://{{.pkg.FullImportPath}}/commit/{{.commit}}">{{.commit}}</a></div>
 	</div>
 </div>
 
-<script>var goVersion = "go1.9";</script>
 <script src="/_static/jquery.js"></script>
 <script src="/_static/jquery.treeview.js"></script>
 <script src="/_static/jquery.treeview.edit.js"></script>

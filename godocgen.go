@@ -222,6 +222,8 @@ func writePackage(c Config, pkg packageT) error {
 		"godoc":     template.HTML(doc),
 		"mainTitle": c.MainTitle,
 		"pkg":       pkg,
+		"commit":    gitCommit(c.Clonedir + "/src/" + pkg.FullImportPath),
+		"now":       time.Now().Format(time.UnixDate),
 	})
 	if err != nil {
 		return err
@@ -232,6 +234,17 @@ func writePackage(c Config, pkg packageT) error {
 	}
 
 	return fp.Close()
+}
+
+func gitCommit(path string) string {
+	cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
+	cmd.Dir = path
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(string(out))
 }
 
 // godoc runs godoc on a package and gets the result.
