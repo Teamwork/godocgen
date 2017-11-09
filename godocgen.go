@@ -165,8 +165,8 @@ func updateRepos(c Config, repos []Repository) error {
 		} else {
 			fmt.Printf("cloning %v                  \r", r.Name)
 			os.Chdir(root)
-			//_, _, err := run("git", "clone", "--depth=1", "--quiet", "git@github.com:Teamwork/"+r.Name)
-			_, _, err := run("git", "clone", "--depth=1", "--quiet", "https://github.com/Teamwork/"+r.Name)
+			_, _, err := run("git", "clone", "--depth=1", "--quiet",
+				fmt.Sprintf("https://github.com/%v/%v", c.Organisation[0], r.Name))
 			os.Chdir(orig)
 
 			if err != nil {
@@ -222,16 +222,16 @@ func writePackage(c Config, pkg packageT) error {
 		match := reRewriteSource.FindAllStringSubmatch(v, -1)[0]
 		line, _ := strconv.ParseInt(match[2][1:], 10, 64)
 		dir := strings.Replace(pkg.RelImportPath, pkg.Name, "", 1)
-		return fmt.Sprintf(`<a href="https://github.com/Teamwork/%v/blob/master/%v%v#L%v">`,
-			pkg.RelImportPath, dir, match[1], line+10)
+		return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v%v#L%v">`,
+			c.Organisation[0], pkg.RelImportPath, dir, match[1], line+10)
 	})
 
 	// Rewrite links to source files
 	doc = reRewriteFileSource.ReplaceAllStringFunc(doc, func(v string) string {
 		match := reRewriteFileSource.FindAllStringSubmatch(v, -1)[0]
 		s := strings.Split(match[1], "/")
-		return fmt.Sprintf(`<a href="https://github.com/Teamwork/%v/blob/master/%v">`,
-			s[2], strings.Join(s[3:len(s)], "/"))
+		return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v">`,
+			c.Organisation[0], s[2], strings.Join(s[3:len(s)], "/"))
 	})
 
 	buf := bufio.NewWriter(fp)
