@@ -55,6 +55,7 @@ group Libraries
 	s3pp
 	test
 	tnef
+	twmail
 	utils
 	validate
 	vat
