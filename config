@@ -18,6 +18,9 @@ outdir ./_site
 # Clone GitHub repos.
 clonedir ./_clone
 
+# Don't clone/pull anything; only use what's already in clonedir.
+skip-clone yes
+
 # GitHub credentials. Will also be loaded from environment (GITHUB_USER,
 # GITHUB_PASS).
 user Carpetsmoker
@@ -29,6 +32,13 @@ exclude
     mention
     ops-moveCompanyProfileImagesToS3
     ops-moveUserProfileImagesToS3
+
+home-text
+	This is all the documentation for all our Go code; both public and private.
+    It is deployed automatically from
+    <a href="https://github.com/Teamwork/docs">the <code>docs</code> repo</a>
+    which is in turn generated automatically with
+    <a href="https://github.com/teamwork/godocgen">the <code>godocgen</code> tool</a>.</p>
 
 # Group defintion; first word is the group name, then any number of words for
 # the description until "---", after which each word will be a package name to

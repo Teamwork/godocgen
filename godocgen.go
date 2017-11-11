@@ -4,6 +4,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -53,31 +54,53 @@ type Config struct {
 	Pass         string
 	Groups       []group
 	Exclude      []string
+	SkipClone    bool
+	HomeText     string
 
 	packages []packageT
 }
 
+type options struct {
+	config    string
+	skipClone bool
+}
+
 func main() {
+	// Parse commandline.
+	var opts options
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "usage: godocgen [flags]\n")
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+
+	flag.StringVar(&opts.config, "config", "./config",
+		"path to config file")
+	flag.BoolVar(&opts.skipClone, "s", false,
+		"skip git clone/pull")
+	flag.Parse()
+
 	// Parse config.
 	var c Config
 	sconfig.RegisterType("[]main.group", func(v []string) (interface{}, error) {
 		g := group{Name: v[0]}
 
-		for i := range v {
-			if v[i] == "---" {
-				g.Projects = v[i+1:]
+		for i := range v[1:] {
+			if v[i+1] == "---" {
+				g.Projects = v[i+2:]
 				break
 			}
-			g.Desc += v[i] + " "
+			g.Desc += v[i+1] + " "
 		}
 		return []group{g}, nil
 	})
-	if err := sconfig.Parse(&c, "./config", nil); err != nil {
+	if err := sconfig.Parse(&c, opts.config, nil); err != nil {
 		fmt.Fprintf(os.Stderr, "cannot load config: %v\n", err)
 		os.Exit(1)
 	}
+	c.SkipClone = c.SkipClone || opts.skipClone
 
-	if len(os.Args) == 1 || os.Args[1] != "skipclone" {
+	if !c.SkipClone {
 		if c.Pass == "" {
 			c.Pass = os.Getenv("GITHUB_PASS")
 			if c.Pass == "" {
@@ -328,8 +351,8 @@ func makeHome(c Config, packages []packageT) error {
 			}
 		}
 
-		// TODO: config value
-		if !found {
+		// TODO: config value instead of hardcoded "Groups[3]"
+		if !found && len(c.Groups) > 3 {
 			c.Groups[3].Packages = append(c.Groups[3].Packages, pkg)
 		}
 	}
@@ -345,6 +368,7 @@ func makeHome(c Config, packages []packageT) error {
 		"style":     template.CSS(style),
 		"groups":    c.Groups,
 		"mainTitle": c.MainTitle,
+		"homeText":  c.HomeText,
 	})
 	if err != nil {
 		return err

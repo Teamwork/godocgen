@@ -16,15 +16,17 @@
 </div>
 
 <div id="homepage">
-	<p>This is all the documentation for all our Go code; both public and private.
-		It is deployed automatically from
-		<a href="https://github.com/Teamwork/docs">the <code>docs</code> repo</a>
-		which is in turn generated automatically with
-		<a href="https://github.com/teamwork/godocgen">the <code>godocgen</code> tool</a>.</p>
+    {{if .homeText}}
+        <p>{{.homeText}}</p>
+    {{end}}
 
 	{{ range $g := .groups }}
-		<h1>{{ $g.Name }}</h1>
-		<p>{{ $g.Desc }}</p>
+        {{if and $g.Name (ne $g.Name "_") }}
+            <h1>{{ $g.Name }}</h1>
+        {{end}}
+        {{if $g.Name}}
+            <p>{{ $g.Desc }}</p>
+        {{end}}
 		<table>
 			<tbody>
 				{{ range $pkg := $g.Packages }}
