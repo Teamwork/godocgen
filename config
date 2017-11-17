@@ -19,7 +19,7 @@ outdir ./_site
 clonedir ./_clone
 
 # Don't clone/pull anything; only use what's already in clonedir.
-skip-clone yes
+#skip-clone yes
 
 # GitHub credentials. Will also be loaded from environment (GITHUB_USER,
 # GITHUB_PASS).
