@@ -53,7 +53,6 @@ group Libraries
 	echoutil
 	flipout
 	geoip
-	go-spamc
 	goamqp
 	httperr
 	israce
@@ -64,7 +63,9 @@ group Libraries
 	must
 	reload
 	s3pp
+	spamc
 	test
+	tmpdir
 	tnef
 	twmail
 	utils
