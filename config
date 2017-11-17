@@ -50,6 +50,7 @@ group Libraries
 	database
 	datadog
 	dlm
+	echoutil
 	flipout
 	geoip
 	go-spamc
