@@ -382,7 +382,7 @@ func makeHome(c Config, packages []packageT) error {
 	err = templates.ExecuteTemplate(buf, "home.tmpl", map[string]interface{}{
 		"groups":    c.Groups,
 		"mainTitle": c.MainTitle,
-		"homeText":  c.HomeText,
+		"homeText":  template.HTML(c.HomeText),
 	})
 	if err != nil {
 		return err
