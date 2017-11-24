@@ -40,19 +40,20 @@ type group struct {
 
 // Config for godocgen.
 type Config struct {
-	Organisation []string
-	Outdir       string
-	Clonedir     string
-	Scan         []string
-	RelativeTo   string
-	MainTitle    string
-	User         string
-	Pass         string
-	Groups       []group
-	Exclude      []string
-	SkipClone    bool
-	HomeText     string
-	Bundle       bool
+	Organisation  []string
+	Outdir        string
+	Clonedir      string
+	Scan          []string
+	RelativeTo    string
+	MainTitle     string
+	User          string
+	Pass          string
+	Groups        []group
+	Exclude       []string
+	SkipClone     bool
+	HomeText      string
+	Bundle        bool
+	RewriteSource string
 
 	packages []packageT
 }
@@ -204,7 +205,7 @@ func updateRepos(c Config, repos []Repository) error {
 //  <a href="/src/target/redis.go?s=1187:1246#L39">
 //to:
 //  <a href="https://github.com/Teamwork/cache/blob/master/redis.go#L39">
-var reRewriteSource = regexp.MustCompile(`<a href="/src/target/(.*?\.go)\?s=[0-9:]+#(L\d+)">`)
+var reRewriteSourceGH = regexp.MustCompile(`<a href="/src/target/(.*?\.go)\?s=[0-9:]+#(L\d+)">`)
 
 var reRewriteFileSource = regexp.MustCompile(`<a href="source://(.*?.go)">`)
 
@@ -238,21 +239,23 @@ func writePackage(c Config, pkg packageT) error {
 	//   }
 	//
 	// This looks really confusing on GitHub.
-	doc = reRewriteSource.ReplaceAllStringFunc(doc, func(v string) string {
-		match := reRewriteSource.FindAllStringSubmatch(v, -1)[0]
-		line, _ := strconv.ParseInt(match[2][1:], 10, 64)
-		dir := strings.Replace(pkg.RelImportPath, pkg.Name, "", 1)
-		return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v%v#L%v">`,
-			c.Organisation[0], pkg.RelImportPath, dir, match[1], line+10)
-	})
+	if c.RewriteSource == "github" {
+		doc = reRewriteSourceGH.ReplaceAllStringFunc(doc, func(v string) string {
+			match := reRewriteSourceGH.FindAllStringSubmatch(v, -1)[0]
+			line, _ := strconv.ParseInt(match[2][1:], 10, 64)
+			dir := strings.Replace(pkg.RelImportPath, pkg.Name, "", 1)
+			return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v%v#L%v">`,
+				c.Organisation[0], pkg.RelImportPath, dir, match[1], line+10)
+		})
 
-	// Rewrite links to source files
-	doc = reRewriteFileSource.ReplaceAllStringFunc(doc, func(v string) string {
-		match := reRewriteFileSource.FindAllStringSubmatch(v, -1)[0]
-		s := strings.Split(match[1], "/")
-		return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v">`,
-			c.Organisation[0], s[2], strings.Join(s[3:len(s)], "/"))
-	})
+		// Rewrite links to source files
+		doc = reRewriteFileSource.ReplaceAllStringFunc(doc, func(v string) string {
+			match := reRewriteFileSource.FindAllStringSubmatch(v, -1)[0]
+			s := strings.Split(match[1], "/")
+			return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v">`,
+				c.Organisation[0], s[2], strings.Join(s[3:len(s)], "/"))
+		})
+	}
 
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "package.tmpl", map[string]interface{}{

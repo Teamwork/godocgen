@@ -26,6 +26,9 @@ clonedir ./_clone
 user Carpetsmoker
 pass  # export GITHUB_PASS
 
+# Rewrite source links to GitHub.
+rewrite-source github
+
 # Exclude some repos; they will not be cloned.
 exclude
     chat-nwjs-to-electron

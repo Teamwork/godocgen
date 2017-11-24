@@ -40,6 +40,9 @@ bundle yes
 user Carpetsmoker
 pass  # export GITHUB_PASS
 
+# Rewrite source links to GitHub.
+rewrite-source github
+
 group
     _
 	---
