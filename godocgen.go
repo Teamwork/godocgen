@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 
 	"arp242.net/sconfig"
 	"arp242.net/singlepage/singlepage"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/teamwork/utils/fileutil"
 	"github.com/teamwork/utils/sliceutil"
 )
@@ -138,7 +140,7 @@ func main() {
 	}
 
 	for _, pkg := range packages {
-		err := writePackage(c, pkg)
+		err := writePackage(c, packages, pkg)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg.Name, err)
 			os.Exit(1)
@@ -210,7 +212,7 @@ var reRewriteSourceGH = regexp.MustCompile(`<a href="/src/target/(.*?\.go)\?s=[0
 var reRewriteFileSource = regexp.MustCompile(`<a href="source://(.*?.go)">`)
 
 // Write package documentation.
-func writePackage(c Config, pkg packageT) error {
+func writePackage(c Config, packages []packageT, pkg packageT) error {
 	doc, err := godoc(pkg.FullImportPath)
 	if err != nil {
 		return err
@@ -276,20 +278,66 @@ func writePackage(c Config, pkg packageT) error {
 		return err
 	}
 
-	if c.Bundle {
-		b, err := ioutil.ReadFile(out)
-		if err != nil {
-			return err
+	b, err := ioutil.ReadFile(out)
+	if err != nil {
+		return err
+	}
+
+	// Remove empty subdirs.
+	qdoc, err := goquery.NewDocumentFromReader(bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+
+	qdoc.Find(".pkg-dir tr").Each(func(i int, s *goquery.Selection) {
+		n := s.Find(".pkg-name")
+		if n.Length() == 0 {
+			return
 		}
-		page, err := singlepage.Bundle(string(b), singlepage.Everything)
-		if err != nil {
-			return err
+		name := strings.TrimSpace(n.Text())
+		if name == "bin" {
+			n.Remove()
+		}
+		if name == ".." || name == "Name" {
+			return
 		}
 
-		err = ioutil.WriteFile(out, []byte(page), 0)
+		name = pkg.RelImportPath + "/" + name
+		//fmt.Println(name)
+		syn := ""
+		for _, p := range packages {
+			if p.RelImportPath == name {
+				syn = p.Doc
+				break
+			}
+		}
+		if syn != "" {
+			s.Find(".pkg-synopsis").SetText(syn)
+		}
+	})
+
+	if qdoc.Find(".pkg-dir tr").Length() <= 3 {
+		qdoc.Find(".pkg-dir").Remove()
+		qdoc.Find(`a[href="#pkg-subdirectories"]`).Parent().Remove()
+		qdoc.Find("#pkg-subdirectories").Remove()
+	}
+
+	html, err := qdoc.Html()
+	if err != nil {
+		return err
+	}
+
+	// Bundle
+	if c.Bundle {
+		html, err = singlepage.Bundle(html, singlepage.Everything)
 		if err != nil {
 			return err
 		}
+	}
+
+	err = ioutil.WriteFile(out, []byte(html), 0)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -309,10 +357,11 @@ func gitCommit(path string) string {
 // godoc runs godoc on a package and gets the result.
 func godoc(path string) (string, error) {
 	// https://go.googlesource.com/tools/+/2d19ab38faf14664c76088411c21bf4fafea960b/godoc/static/
+	//cmd := exec.Command("godoc", "-url", "/pkg/"+path)
 	cmd := exec.Command("godoc", "-html", "-templates", "godoc_tpl", "-analysis", "type,pointer", path)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("could not run godoc: %v", err)
+		return "", fmt.Errorf("could not run godoc: %v: %s", err, bytes.Split(out, []byte("\n"))[0])
 	}
 
 	// Remove the first line, which is always:
