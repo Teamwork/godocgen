@@ -24,3 +24,7 @@
 [[constraint]]
   branch = "master"
   name = "arp242.net/sconfig"
+
+[[constraint]]
+  branch = "master"
+  name = "arp242.net/singlepage"

@@ -8,14 +8,50 @@
   revision = "3e81e0483e0f91c2adcf4588329a97147e1f0e5e"
 
 [[projects]]
+  branch = "master"
+  name = "arp242.net/singlepage"
+  packages = ["singlepage"]
+  revision = "dcbf3446e4fd1c2c5fe8f597c3f42906b63a0f98"
+
+[[projects]]
+  name = "github.com/PuerkitoBio/goquery"
+  packages = ["."]
+  revision = "e1271ee34c6a305e38566ecd27ae374944907ee9"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/andybalholm/cascadia"
+  packages = ["."]
+  revision = "349dd0209470eabd9514242c688c403c0926d266"
+
+[[projects]]
+  name = "github.com/tdewolff/minify"
+  packages = [".","css","html","js"]
+  revision = "90df1aae5028a7cbb441bde86e86a55df6b5aa34"
+  version = "v2.3.3"
+
+[[projects]]
+  name = "github.com/tdewolff/parse"
+  packages = [".","buffer","css","html","js","strconv"]
+  revision = "bace4cf682c41e03b154044b561575ff541b83e8"
+  version = "v2.3.1"
+
+[[projects]]
   branch = "fileutil"
   name = "github.com/teamwork/utils"
   packages = ["fileutil","sliceutil"]
   revision = "dda40d5a953c5bfcde6ec980a04291a8a30602a8"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["html","html/atom"]
+  revision = "c7086645de248775cbf2373cf5ca4d2fa664b8c1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d6ecc436d6823544ea8a344259b0f7a6a7d2b441af5e5cd892c945883db56ee2"
+  inputs-digest = "e4b74173fcebcbd363bd76220d81f9712c3c2f71717a8897881d057f2972b4b8"
   solver-name = "gps-cdcl"
   solver-version = 1

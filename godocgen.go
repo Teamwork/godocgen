@@ -19,13 +19,9 @@ import (
 	"time"
 
 	"arp242.net/sconfig"
+	"arp242.net/singlepage/singlepage"
 	"github.com/teamwork/utils/fileutil"
 	"github.com/teamwork/utils/sliceutil"
-)
-
-var (
-	templates = template.Must(template.ParseFiles("package.tmpl", "index.tmpl", "home.tmpl"))
-	style     = mustRead("./style.css")
 )
 
 type packageT struct {
@@ -56,6 +52,7 @@ type Config struct {
 	Exclude      []string
 	SkipClone    bool
 	HomeText     string
+	Bundle       bool
 
 	packages []packageT
 }
@@ -64,6 +61,8 @@ type options struct {
 	config    string
 	skipClone bool
 }
+
+var templates = template.Must(template.ParseFiles("package.tmpl", "index.tmpl", "home.tmpl"))
 
 func main() {
 	// Parse commandline.
@@ -74,10 +73,8 @@ func main() {
 		os.Exit(2)
 	}
 
-	flag.StringVar(&opts.config, "config", "./config",
-		"path to config file")
-	flag.BoolVar(&opts.skipClone, "s", false,
-		"skip git clone/pull")
+	flag.StringVar(&opts.config, "config", "./config", "path to config file")
+	flag.BoolVar(&opts.skipClone, "s", false, "skip git clone/pull")
 	flag.Parse()
 
 	// Parse config.
@@ -142,7 +139,7 @@ func main() {
 	for _, pkg := range packages {
 		err := writePackage(c, pkg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg, err)
+			fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg.Name, err)
 			os.Exit(1)
 		}
 	}
@@ -259,7 +256,6 @@ func writePackage(c Config, pkg packageT) error {
 
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "package.tmpl", map[string]interface{}{
-		"style":     template.CSS(style),
 		"godoc":     template.HTML(doc),
 		"mainTitle": c.MainTitle,
 		"pkg":       pkg,
@@ -273,8 +269,27 @@ func writePackage(c Config, pkg packageT) error {
 	if err := buf.Flush(); err != nil {
 		return err
 	}
+	if err := fp.Close(); err != nil {
+		return err
+	}
 
-	return fp.Close()
+	if c.Bundle {
+		b, err := ioutil.ReadFile(out)
+		if err != nil {
+			return err
+		}
+		page, err := singlepage.Bundle(string(b), singlepage.Everything)
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(out, []byte(page), 0)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func gitCommit(path string) string {
@@ -365,7 +380,6 @@ func makeHome(c Config, packages []packageT) error {
 
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "home.tmpl", map[string]interface{}{
-		"style":     template.CSS(style),
 		"groups":    c.Groups,
 		"mainTitle": c.MainTitle,
 		"homeText":  c.HomeText,
@@ -396,7 +410,6 @@ func makeIndex(c Config, path string) error {
 
 	buf := bufio.NewWriter(fp)
 	err = templates.ExecuteTemplate(buf, "index.tmpl", map[string]interface{}{
-		"style":     template.CSS(style),
 		"contents":  contents,
 		"mainTitle": c.MainTitle,
 	})
