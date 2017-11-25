@@ -26,6 +26,9 @@ clonedir ./_clone
 user Carpetsmoker
 pass  # export GITHUB_PASS
 
+# Add --depth=1 to git clone
+#shallow-clone yes
+
 # Rewrite source links to GitHub.
 rewrite-source github
 
@@ -35,6 +38,7 @@ exclude
     mention
     ops-moveCompanyProfileImagesToS3
     ops-moveUserProfileImagesToS3
+	integrations-microsoftconnectors
 
 home-text
 	This is all the documentation for all our Go code; both public and private.

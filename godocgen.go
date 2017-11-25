@@ -56,6 +56,7 @@ type Config struct {
 	HomeText      string
 	Bundle        bool
 	RewriteSource string
+	ShallowClone  bool
 
 	packages []packageT
 }
@@ -188,8 +189,12 @@ func updateRepos(c Config, repos []Repository) error {
 		} else {
 			fmt.Printf("cloning %v                  \r", r.Name)
 			os.Chdir(root)
-			_, _, err := run("git", "clone", "--depth=1", "--quiet",
-				fmt.Sprintf("https://github.com/%v/%v", c.Organisation[0], r.Name))
+			cmd := []string{"git", "clone"}
+			if c.ShallowClone {
+				cmd = append(cmd, "--depth=1")
+			}
+			_, _, err := run(append(cmd, "--quiet",
+				fmt.Sprintf("https://github.com/%v/%v", c.Organisation[0], r.Name))...)
 			os.Chdir(orig)
 
 			if err != nil {
