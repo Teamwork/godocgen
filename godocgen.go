@@ -57,8 +57,6 @@ type Config struct {
 	Bundle        bool
 	RewriteSource string
 	ShallowClone  bool
-
-	packages []packageT
 }
 
 type options struct {
@@ -125,14 +123,28 @@ func main() {
 	}
 
 	// Setup _site
-	abs, _ := os.Getwd()
-	os.Setenv("GOPATH", filepath.Join(abs, "/", c.Clonedir))
+	abs, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
+	err = os.Setenv("GOPATH", filepath.Join(abs, "/", c.Clonedir))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
 	// TODO: exclude .git
 	//rm, _ := filepath.Glob(filepath.Join(c.Outdir, "/*"))
 	//for _, p := range rm {
 	//	os.RemoveAll(p)
 	//}
-	fileutil.CopyTree("./_static", c.Outdir+"/_static", nil)
+	err = fileutil.CopyTree("./_static", c.Outdir+"/_static", nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
 
 	packages, err := list(c)
 	if err != nil {
@@ -160,12 +172,24 @@ func main() {
 
 // Clone/update repos.
 func updateRepos(c Config, repos []Repository) error {
-	orig, _ := os.Getwd()
-	orig, _ = filepath.Abs(orig)
-	defer func() { os.Chdir(orig) }()
+	orig, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	orig, err = filepath.Abs(orig)
+	if err != nil {
+		return err
+	}
+
+	var rErr error
+	defer func() { rErr = os.Chdir(orig) }()
 
 	root := filepath.Join(c.Clonedir, "/src/github.com/", c.Organisation[0])
-	os.MkdirAll(root, 0700)
+	err = os.MkdirAll(root, 0700)
+	if err != nil {
+		return err
+	}
 
 	for i, r := range repos {
 		fmt.Printf(" %v/%v ", i+1, len(repos))
@@ -179,24 +203,38 @@ func updateRepos(c Config, repos []Repository) error {
 		d := filepath.Join(root, "/", r.Name)
 		if s, err := os.Stat(d); err == nil && s.IsDir() {
 			fmt.Printf("updating %v                 \r", r.Name)
-			os.Chdir(d)
-			_, _, err := run("git", "pull", "--quiet")
-			os.Chdir(orig)
+			err = os.Chdir(d)
+			if err != nil {
+				return err
+			}
 
+			_, _, err := run("git", "pull", "--quiet")
+			if err != nil {
+				return err
+			}
+
+			err = os.Chdir(orig)
 			if err != nil {
 				return err
 			}
 		} else {
 			fmt.Printf("cloning %v                  \r", r.Name)
-			os.Chdir(root)
+			err = os.Chdir(root)
+			if err != nil {
+				return err
+			}
+
 			cmd := []string{"git", "clone"}
 			if c.ShallowClone {
 				cmd = append(cmd, "--depth=1")
 			}
 			_, _, err := run(append(cmd, "--quiet",
 				fmt.Sprintf("https://github.com/%v/%v", c.Organisation[0], r.Name))...)
-			os.Chdir(orig)
+			if err != nil {
+				return err
+			}
 
+			err = os.Chdir(orig)
 			if err != nil {
 				return err
 			}
@@ -205,7 +243,7 @@ func updateRepos(c Config, repos []Repository) error {
 	}
 
 	fmt.Printf("\n")
-	return nil
+	return rErr
 }
 
 // Rewrite source links from:
@@ -260,7 +298,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 			match := reRewriteFileSource.FindAllStringSubmatch(v, -1)[0]
 			s := strings.Split(match[1], "/")
 			return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v">`,
-				c.Organisation[0], s[2], strings.Join(s[3:len(s)], "/"))
+				c.Organisation[0], s[2], strings.Join(s[3:], "/"))
 		})
 	}
 
@@ -340,12 +378,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 		}
 	}
 
-	err = ioutil.WriteFile(out, []byte(html), 0)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ioutil.WriteFile(out, []byte(html), 0)
 }
 
 func gitCommit(path string) string {
@@ -486,8 +519,8 @@ func run(cmd ...string) (stdout []string, stderr []string, err error) {
 
 	outPipe, _ := r.StdoutPipe()
 	errPipe, _ := r.StderrPipe()
-	defer outPipe.Close()
-	defer errPipe.Close()
+	defer outPipe.Close() // nolint: errcheck
+	defer errPipe.Close() // nolint: errcheck
 
 	err = r.Start()
 
@@ -500,20 +533,6 @@ func run(cmd ...string) (stdout []string, stderr []string, err error) {
 
 func removePathPrefix(full, remove string) string {
 	return strings.Trim(strings.Replace(full, remove, "", 1), "/")
-}
-
-func mustRead(path string) string {
-	fp, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-
-	out, err := ioutil.ReadAll(fp)
-	if err != nil {
-		panic(err)
-	}
-
-	return string(out)
 }
 
 func list(c Config) ([]packageT, error) {
@@ -638,7 +657,7 @@ func request(c Config, scan interface{}, args requestArgs) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint: errcheck
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
