@@ -27,7 +27,7 @@ user Carpetsmoker
 pass  # export GITHUB_PASS
 
 # Add --depth=1 to git clone
-#shallow-clone yes
+shallow-clone yes
 
 # Rewrite source links to GitHub.
 rewrite-source github
