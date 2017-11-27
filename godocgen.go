@@ -140,9 +140,16 @@ func main() {
 	//for _, p := range rm {
 	//	os.RemoveAll(p)
 	//}
-	err = fileutil.CopyTree("./_static", c.Outdir+"/_static", nil)
+	staticDir := c.Outdir + "/_static"
+	if _, err := os.Stat(staticDir); err == nil {
+		err := os.RemoveAll(c.Outdir + "/_static")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not remove to %v: %v\n", staticDir, err)
+		}
+	}
+	err = fileutil.CopyTree("./_static", staticDir, nil)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		fmt.Fprintf(os.Stderr, "Could not copy to %v: %v\n", staticDir, err)
 		os.Exit(1)
 	}
 
