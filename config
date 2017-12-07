@@ -34,18 +34,18 @@ rewrite-source github
 
 # Exclude some repos; they will not be cloned.
 exclude
-    chat-nwjs-to-electron
-    mention
-    ops-moveCompanyProfileImagesToS3
-    ops-moveUserProfileImagesToS3
+	chat-nwjs-to-electron
+	mention
+	ops-moveCompanyProfileImagesToS3
+	ops-moveUserProfileImagesToS3
 	integrations-microsoftconnectors
 
 home-text
 	This is all the documentation for all our Go code; both public and private.
-    It is deployed automatically from
-    <a href="https://github.com/Teamwork/docs">the <code>docs</code> repo</a>
-    which is in turn generated automatically with
-    <a href="https://github.com/teamwork/godocgen">the <code>godocgen</code> tool</a>.</p>
+	It is deployed automatically from
+	<a href="https://github.com/Teamwork/docs">the <code>docs</code> repo</a>
+	which is in turn generated automatically with
+	<a href="https://github.com/teamwork/godocgen">the <code>godocgen</code> tool</a>.</p>
 
 # Group defintion; first word is the group name, then any number of words for
 # the description until "---", after which each word will be a package name to
@@ -74,6 +74,7 @@ group Libraries
 	test
 	tmpdir
 	tnef
+	try
 	twmail
 	utils
 	validate
