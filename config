@@ -61,6 +61,7 @@ group Libraries
 	flipout
 	geoip
 	goamqp
+	htmltotext
 	httperr
 	israce
 	log
