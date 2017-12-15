@@ -76,6 +76,7 @@ group Libraries
 	tmpdir
 	tnef
 	try
+	tryhttp
 	twmail
 	utils
 	validate
