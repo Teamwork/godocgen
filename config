@@ -53,6 +53,7 @@ home-text
 group Libraries
 	Generic libraries that can be used by any project. Both public and private.
 	---
+	apiutil
 	cache
 	database
 	datadog

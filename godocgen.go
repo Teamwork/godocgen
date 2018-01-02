@@ -345,7 +345,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 			return
 		}
 		name := strings.TrimSpace(n.Text())
-		if name == "bin" {
+		if name == "bin" || name == "docs" {
 			n.Remove()
 		}
 		if name == ".." || name == "Name" {
