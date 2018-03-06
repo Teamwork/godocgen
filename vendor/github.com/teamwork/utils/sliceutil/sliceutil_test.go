@@ -306,34 +306,6 @@ func TestInInt64Slice(t *testing.T) {
 	}
 }
 
-func TestDifference(t *testing.T) {
-	cases := []struct {
-		inSet    []int64
-		inOthers [][]int64
-		expected []int64
-	}{
-		{[]int64{}, [][]int64{}, []int64{}},
-		{nil, [][]int64{}, []int64{}},
-		{[]int64{}, nil, []int64{}},
-		{nil, nil, []int64{}},
-		{[]int64{1}, [][]int64{{1}}, []int64{}},
-		{[]int64{1, 2, 2, 3}, [][]int64{{1, 2, 2, 3}}, []int64{}},
-		{[]int64{1, 2, 2, 3}, [][]int64{{1, 2}, {3}}, []int64{}},
-		{[]int64{1, 2}, [][]int64{{1}}, []int64{2}},
-		{[]int64{1, 2, 3}, [][]int64{{1}}, []int64{2, 3}},
-		{[]int64{1, 2, 3}, [][]int64{{}, {1}}, []int64{2, 3}},
-	}
-
-	for i, tc := range cases {
-		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
-			out := Difference(tc.inSet, tc.inOthers...)
-			if !reflect.DeepEqual(tc.expected, out) {
-				t.Errorf("\nout:      %#v\nexpected: %#v\n", out, tc.expected)
-			}
-		})
-	}
-}
-
 func TestRange(t *testing.T) {
 	cases := []struct {
 		start, end int
@@ -349,6 +321,92 @@ func TestRange(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%v-%v", tc.start, tc.end), func(t *testing.T) {
 			out := Range(tc.start, tc.end)
+			if !reflect.DeepEqual(tc.want, out) {
+				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tc.want)
+			}
+		})
+	}
+}
+
+func TestFilterString(t *testing.T) {
+	cases := []struct {
+		fun  func(string) bool
+		in   []string
+		want []string
+	}{
+		{
+			FilterStringEmpty,
+			[]string(nil),
+			[]string(nil),
+		},
+		{
+			FilterStringEmpty,
+			[]string{},
+			[]string(nil),
+		},
+		{
+			FilterStringEmpty,
+			[]string{"1"},
+			[]string{"1"},
+		},
+		{
+			FilterStringEmpty,
+			[]string{"", "1", ""},
+			[]string{"1"},
+		},
+		{
+			FilterStringEmpty,
+			[]string{"", "1", "", "2", "asd", "", "", "", "zx", "", "a"},
+			[]string{"1", "2", "asd", "zx", "a"},
+		},
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			out := FilterString(tc.in, tc.fun)
+			if !reflect.DeepEqual(tc.want, out) {
+				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tc.want)
+			}
+		})
+	}
+}
+
+func TestFilterInt(t *testing.T) {
+	cases := []struct {
+		fun  func(int64) bool
+		in   []int64
+		want []int64
+	}{
+		{
+			FilterIntEmpty,
+			[]int64(nil),
+			[]int64(nil),
+		},
+		{
+			FilterIntEmpty,
+			[]int64{},
+			[]int64(nil),
+		},
+		{
+			FilterIntEmpty,
+			[]int64{1},
+			[]int64{1},
+		},
+		{
+			FilterIntEmpty,
+			[]int64{0, 1, 0},
+			[]int64{1},
+		},
+		{
+			FilterIntEmpty,
+			[]int64{0, 1, 0, 2, -1, 0, 0, 0, 42, 666, -666, 0, 0, 0},
+			[]int64{1, 2, -1, 42, 666, -666},
+		},
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			out := FilterInt(tc.in, tc.fun)
 			if !reflect.DeepEqual(tc.want, out) {
 				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tc.want)
 			}

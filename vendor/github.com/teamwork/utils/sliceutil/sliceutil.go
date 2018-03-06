@@ -1,4 +1,9 @@
-// Package sliceutil provides a set if functions for working with slices.
+// Package sliceutil provides functions for working with slices.
+//
+// The "set" helpers are simple implementations, and don't operate on true
+// "sets" (e.g. it will retain order, []int64 can contain duplicates). Consider
+// using something like golang-set if you want to use sets and care a lot about
+// performance: https://github.com/deckarep/golang-set
 package sliceutil // import "github.com/teamwork/utils/sliceutil"
 
 import (
@@ -122,28 +127,6 @@ func RepeatString(s string, n int) (r []string) {
 	return r
 }
 
-// Difference returns a new slice with elements that are in "set" but not in
-// "others".
-func Difference(set []int64, others ...[]int64) []int64 {
-	out := []int64{}
-
-	for _, setItem := range set {
-		found := false
-		for _, o := range others {
-			if InInt64Slice(o, setItem) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			out = append(out, setItem)
-		}
-	}
-
-	return out
-}
-
 // Range creates an []int counting at "start" up to (and including) "end".
 func Range(start, end int) []int {
 	rng := make([]int, end-start+1)
@@ -151,4 +134,42 @@ func Range(start, end int) []int {
 		rng[i] = start + i
 	}
 	return rng
+}
+
+// FilterString filters a list. The function will be called for every item and
+// those that return false will not be included in the return value.
+func FilterString(list []string, fun func(string) bool) []string {
+	var ret []string
+	for _, e := range list {
+		if fun(e) {
+			ret = append(ret, e)
+		}
+	}
+
+	return ret
+}
+
+// FilterStringEmpty can be used as an argument for FilterString() and will
+// return false if e is empty or contains only whitespace.
+func FilterStringEmpty(e string) bool {
+	return strings.TrimSpace(e) != ""
+}
+
+// FilterInt filters a list. The function will be called for every item and
+// those that return false will not be included in the return value.
+func FilterInt(list []int64, fun func(int64) bool) []int64 {
+	var ret []int64
+	for _, e := range list {
+		if fun(e) {
+			ret = append(ret, e)
+		}
+	}
+
+	return ret
+}
+
+// FilterIntEmpty can be used as an argument for FilterInt() and will
+// return false if e is empty or contains only whitespace.
+func FilterIntEmpty(e int64) bool {
+	return e != 0
 }

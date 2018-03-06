@@ -22,7 +22,7 @@ import (
 	"arp242.net/sconfig"
 	"arp242.net/singlepage/singlepage"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/teamwork/utils/fileutil"
+	"github.com/teamwork/utils/ioutilx"
 	"github.com/teamwork/utils/sliceutil"
 )
 
@@ -147,7 +147,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Could not remove to %v: %v\n", staticDir, err)
 		}
 	}
-	err = fileutil.CopyTree("./_static", staticDir, nil)
+	err = ioutilx.CopyTree("./_static", staticDir, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not copy to %v: %v\n", staticDir, err)
 		os.Exit(1)
