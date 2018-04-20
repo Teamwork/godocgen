@@ -463,9 +463,9 @@ func makeHome(c Config, packages []packageT) error {
 			}
 		}
 
-		// TODO: config value instead of hardcoded "Groups[3]"
-		if !found && len(c.Groups) > 3 {
-			c.Groups[3].Packages = append(c.Groups[3].Packages, pkg)
+		// TODO: config value instead of hardcoded "Groups[5]"
+		if !found && len(c.Groups) > 5 {
+			c.Groups[5].Packages = append(c.Groups[5].Packages, pkg)
 		}
 	}
 

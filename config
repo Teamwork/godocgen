@@ -58,24 +58,28 @@ group Libraries
 	database
 	datadog
 	dlm
+	easytpl
 	echoutil
 	flipout
 	geoip
 	goamqp
+	guru
 	htmltotext
-	httperr
 	israce
 	log
 	mailaddress
 	mailcheckerc
+	mailprovider
 	middleware
 	must
+	nameparser
 	reload
 	s3pp
 	spamc
 	test
 	tmpdir
 	tnef
+	toutf8
 	try
 	tryhttp
 	twmail
@@ -103,10 +107,25 @@ group Projects
 	Teamwork Projects-specific projects.
 	---
 	TeamworkAPIInGO
+	apidocs-projects
 	notification-server
 	projects-api
 	projects-webhooks
 	projectsapigo
+
+group CRM
+	Teamwork CRM-specific projects.
+	---
+	crm-core
+	crmcore
+	crm-exchange-rates
+
+group Platform
+	Teamwork Platform projects.
+	---
+	checkout
+	launchpad
+	strut
 
 group Other
 	Everything not in one of the other groups.
