@@ -32,13 +32,20 @@ shallow-clone yes
 # Rewrite source links to GitHub.
 rewrite-source github
 
+# Put non-grouped packages in this group. It will use the last group if not
+# given.
+#non-grouped other
+
 # Exclude some repos; they will not be cloned.
 exclude
+	TeamworkDeskTool
 	chat-nwjs-to-electron
+	email
+	go-modules
+	integrations-microsoftconnectors
 	mention
 	ops-moveCompanyProfileImagesToS3
 	ops-moveUserProfileImagesToS3
-	integrations-microsoftconnectors
 
 home-text
 	This is all the documentation for all our Go code; both public and private.
@@ -51,7 +58,6 @@ home-text
 # the description until "---", after which each word will be a package name to
 # be included in this group.
 group Libraries
-	Generic libraries that can be used by any project. Both public and private.
 	---
 	apiutil
 	cache
@@ -60,11 +66,13 @@ group Libraries
 	dlm
 	easytpl
 	echoutil
+	factorygen
 	flipout
 	geoip
 	goamqp
 	guru
 	htmltotext
+	i18n
 	israce
 	log
 	mailaddress
@@ -88,7 +96,6 @@ group Libraries
 	vat
 
 group Desk
-	Teamwork Desk-specific projects
 	---
 	desk
 	deskactivity
@@ -104,7 +111,6 @@ group Desk
 	mailchecker
 
 group Projects
-	Teamwork Projects-specific projects.
 	---
 	TeamworkAPIInGO
 	apidocs-projects
@@ -113,27 +119,25 @@ group Projects
 	projects-webhooks
 	projectsapigo
 
+group Platform
+	---
+	checkout
+	godocgen
+	hub
+	kommentaar
+	launchpad
+	strut
+	twbot
+
 group CRM
-	Teamwork CRM-specific projects.
 	---
 	crm-core
 	crmcore
 	crm-exchange-rates
 
-group Platform
-	Teamwork Platform projects.
+group Spaces
 	---
-	checkout
-	launchpad
-	strut
+	spaces-api
 
 group Other
-	Everything not in one of the other groups.
 	---
-
-group Deprecated
-	Old stuff; don't use unless you really know what you're doing
-	---
-	TeamworkDeskTool
-	email
-	go-modules

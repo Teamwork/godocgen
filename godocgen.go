@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"html/template"
@@ -57,6 +58,7 @@ type Config struct {
 	Bundle        bool
 	RewriteSource string
 	ShallowClone  bool
+	NonGrouped    string
 }
 
 type options struct {
@@ -67,10 +69,18 @@ type options struct {
 var templates = template.Must(template.ParseFiles("package.tmpl", "index.tmpl", "home.tmpl"))
 
 func main() {
+	err := start()
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "godocgen: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func start() error {
 	// Parse commandline.
 	var opts options
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "usage: godocgen [flags]\n")
+		_, _ = fmt.Fprintf(os.Stderr, "usage: godocgen [flags]\n")
 		flag.PrintDefaults()
 		os.Exit(2)
 	}
@@ -94,8 +104,7 @@ func main() {
 		return []group{g}, nil
 	})
 	if err := sconfig.Parse(&c, opts.config, nil); err != nil {
-		fmt.Fprintf(os.Stderr, "cannot load config: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("cannot load config: %v", err)
 	}
 	c.SkipClone = c.SkipClone || opts.skipClone
 
@@ -103,36 +112,30 @@ func main() {
 		if c.Pass == "" {
 			c.Pass = os.Getenv("GITHUB_PASS")
 			if c.Pass == "" {
-				fmt.Fprintf(os.Stderr,
-					"No password set; please set 'pass' in config or use the GITHUB_PASS env variable\n")
-				os.Exit(1)
+				return errors.New("no password set; please set 'pass' in config or use the GITHUB_PASS env variable")
 			}
 		}
 
 		// Load GitHub repos.
 		repos, err := getRepos(c)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cannot get repo list: %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("cannot get repo list: %v", err)
 		}
 
 		if err := updateRepos(c, repos); err != nil {
-			fmt.Fprintf(os.Stderr, "cannot update repo: %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("cannot update repo: %v", err)
 		}
 	}
 
 	// Setup _site
 	abs, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	err = os.Setenv("GOPATH", filepath.Join(abs, "/", c.Clonedir))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	// TODO: exclude .git
@@ -144,37 +147,34 @@ func main() {
 	if _, err := os.Stat(staticDir); err == nil {
 		err := os.RemoveAll(c.Outdir + "/_static")
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Could not remove to %v: %v\n", staticDir, err)
+			return fmt.Errorf("could not remove to %v: %v", staticDir, err)
 		}
 	}
 	err = ioutilx.CopyTree("./_static", staticDir, nil)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not copy to %v: %v\n", staticDir, err)
-		os.Exit(1)
+		return fmt.Errorf("could not copy to %v: %v", staticDir, err)
 	}
 
 	packages, err := list(c)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "cannot list packages: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("cannot list packages: %v", err)
 	}
 
 	for _, pkg := range packages {
 		err := writePackage(c, packages, pkg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "could not write package %v: %v\n", pkg.Name, err)
-			os.Exit(1)
+			return fmt.Errorf("could not write package %v: %v", pkg.Name, err)
 		}
 	}
 
 	if err := makeIndexes(c); err != nil {
-		fmt.Fprintf(os.Stderr, "could not generate index.html files: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("could not generate index.html files: %v", err)
 	}
 	if err := makeHome(c, packages); err != nil {
-		fmt.Fprintf(os.Stderr, "could not generate index.html files: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("could not generate index.html files: %v", err)
 	}
+
+	return nil
 }
 
 // Clone/update repos.
@@ -430,7 +430,7 @@ func makeIndexes(c Config) error {
 			return nil
 		}
 
-		if path == "./_site" { // TODO: config
+		if path == c.Outdir {
 			return nil
 		}
 
@@ -449,6 +449,22 @@ func makeIndexes(c Config) error {
 
 // Make the homepage.
 func makeHome(c Config, packages []packageT) error {
+	other := -1
+	if c.NonGrouped != "" {
+		for i := range c.Groups {
+			if strings.EqualFold(c.Groups[i].Name, c.NonGrouped) {
+				other = i
+				break
+			}
+		}
+
+		if other == -1 {
+			return fmt.Errorf("non-grouped %q not found in list of groups", c.NonGrouped)
+		}
+	} else {
+		other = len(c.Groups) - 1
+	}
+
 	// Add to group.
 	for _, pkg := range packages {
 		found := false
@@ -463,9 +479,8 @@ func makeHome(c Config, packages []packageT) error {
 			}
 		}
 
-		// TODO: config value instead of hardcoded "Groups[5]"
-		if !found && len(c.Groups) > 5 {
-			c.Groups[5].Packages = append(c.Groups[5].Packages, pkg)
+		if !found {
+			c.Groups[other].Packages = append(c.Groups[other].Packages, pkg)
 		}
 	}
 
