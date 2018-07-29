@@ -290,16 +290,17 @@ var reRewriteFileSource = regexp.MustCompile(`<a href="source://(.*?.go)">`)
 func writePackage(c Config, packages []packageT, pkg packageT) error {
 	doc, err := godoc(pkg.FullImportPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("godoc: %v", err)
 	}
 
 	out := filepath.Join(c.Outdir, filepath.Dir(pkg.RelImportPath), pkg.Name) + "/index.html"
-	if err := os.MkdirAll(filepath.Dir(out), 0700); err != nil {
+	err = os.MkdirAll(filepath.Dir(out), 0700)
+	if err != nil {
 		return err
 	}
 	fp, err := os.Create(out)
 	if err != nil {
-		return err
+		return fmt.Errorf("os.Create: %v", err)
 	}
 
 	// Fix source links. By default they're offset by 10; from srcPosLinkFunc()
@@ -343,7 +344,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 		"now":       time.Now().Format(time.UnixDate),
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("tpl: %v", err)
 	}
 
 	if err := buf.Flush(); err != nil {
@@ -355,7 +356,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 
 	b, err := ioutil.ReadFile(out)
 	if err != nil {
-		return err
+		return fmt.Errorf("ReadFile: %v", err)
 	}
 
 	// Remove empty subdirs.
@@ -406,11 +407,15 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 	if c.Bundle {
 		html, err = singlepage.Bundle([]byte(html), singlepage.Everything)
 		if err != nil {
-			return err
+			return fmt.Errorf("bundle: %v", err)
 		}
 	}
 
-	return ioutil.WriteFile(out, []byte(html), 0)
+	err = ioutil.WriteFile(out, []byte(html), 0)
+	if err != nil {
+		return fmt.Errorf("WriteFile: %v", err)
+	}
+	return nil
 }
 
 func gitCommit(path string) string {
@@ -434,11 +439,7 @@ func godoc(path string) (string, error) {
 		return "", fmt.Errorf("could not run godoc: %v: %s", err, bytes.Split(out, []byte("\n"))[0])
 	}
 
-	// Remove the first line, which is always:
-	//    use 'godoc cmd/fmt' for documentation on the fmt command
-	// and always unwanted.
-	doc := string(out)
-	return doc[strings.Index(doc, "\n"):], nil
+	return string(out), nil
 }
 
 // Create indexes for packages that don't have one; this happens if there's a
