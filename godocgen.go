@@ -401,7 +401,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 
 	// Bundle
 	if c.Bundle {
-		html, err = singlepage.Bundle(html, singlepage.Everything)
+		html, err = singlepage.Bundle([]byte(html), singlepage.Everything)
 		if err != nil {
 			return err
 		}
