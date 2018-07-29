@@ -41,9 +41,7 @@ exclude
 	TeamworkDeskTool
 	chat-nwjs-to-electron
 	email
-	go-modules
 	integrations-microsoftconnectors
-	mention
 	ops-moveCompanyProfileImagesToS3
 	ops-moveUserProfileImagesToS3
 

@@ -3,11 +3,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:211e113f87e109f9bedb5f905869b8aff255fbf5d813fb3e7fc1f9e5f8afb97d"
+  digest = "1:59b0804dd880c82444c2d4df1159c68a7e4948ef2e6451b1d413168246384ca3"
   name = "arp242.net/hubhub"
   packages = ["."]
   pruneopts = "UT"
-  revision = "13b6373d21df1f5c884e250646170e5ba6f9bf6b"
+  revision = "50ec4a69ff6d78a0ec36bba4837589e78433f74a"
 
 [[projects]]
   digest = "1:15dce9032323627745e788671b99a0ca125008fd1025465a65cbb8fb7253b3cb"

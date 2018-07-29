@@ -186,7 +186,10 @@ func filterRepos(in []hubhub.Repository) []hubhub.Repository {
 	var out []hubhub.Repository
 
 	for _, r := range in {
-		// TODO: filter archived repos
+		if r.Archived {
+			continue
+		}
+
 		if r.Language == "Go" || InStringSlice(r.Topics, "go") || InStringSlice(r.Topics, "golang") {
 			// TODO: Don't do this on initial clone
 			// TODO: config!

@@ -149,6 +149,7 @@ func RequestStat(scan interface{}, method, url string, maxWait time.Duration) er
 // Repository in GitHub.
 type Repository struct {
 	Name     string    `json:"name"`
+	Archived bool      `json:"archived"`
 	Language string    `json:"language"`
 	PushedAt time.Time `json:"pushed_at"`
 	Topics   []string  `json:"topics"`
