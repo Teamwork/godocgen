@@ -4,13 +4,11 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"html/template"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -20,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"arp242.net/hubhub"
 	"arp242.net/sconfig"
 	"arp242.net/singlepage/singlepage"
 	"github.com/PuerkitoBio/goquery"
@@ -103,7 +102,8 @@ func start() error {
 		}
 		return []group{g}, nil
 	})
-	if err := sconfig.Parse(&c, opts.config, nil); err != nil {
+	err := sconfig.Parse(&c, opts.config, nil)
+	if err != nil {
 		return fmt.Errorf("cannot load config: %v", err)
 	}
 	c.SkipClone = c.SkipClone || opts.skipClone
@@ -116,13 +116,18 @@ func start() error {
 			}
 		}
 
+		hubhub.User = c.User
+		hubhub.Token = c.Pass
+
 		// Load GitHub repos.
-		repos, err := getRepos(c)
+		repos, err := hubhub.ListRepos("orgs/" + c.Organisation[0])
 		if err != nil {
 			return fmt.Errorf("cannot get repo list: %v", err)
 		}
 
-		if err := updateRepos(c, repos); err != nil {
+		repos = filterRepos(repos)
+		err = updateRepos(c, repos)
+		if err != nil {
 			return fmt.Errorf("cannot update repo: %v", err)
 		}
 	}
@@ -177,8 +182,25 @@ func start() error {
 	return nil
 }
 
+func filterRepos(in []hubhub.Repository) []hubhub.Repository {
+	var out []hubhub.Repository
+
+	for _, r := range in {
+		// TODO: filter archived repos
+		if r.Language == "Go" || InStringSlice(r.Topics, "go") || InStringSlice(r.Topics, "golang") {
+			// TODO: Don't do this on initial clone
+			// TODO: config!
+			//if r.PushedAt.After(time.Now().Add(-48 * time.Hour)) {
+			out = append(out, r)
+			//}
+		}
+	}
+
+	return out
+}
+
 // Clone/update repos.
-func updateRepos(c Config, repos []Repository) error {
+func updateRepos(c Config, repos []hubhub.Repository) error {
 	orig, err := os.Getwd()
 	if err != nil {
 		return err
@@ -649,47 +671,6 @@ func list(c Config) ([]packageT, error) {
 	return packages, nil
 }
 
-// Repository in git.
-type Repository struct {
-	Name     string    `json:"name"`
-	Language string    `json:"language"`
-	PushedAt time.Time `json:"pushed_at"`
-	Topics   []string  `json:"topics"`
-}
-
-type requestArgs struct {
-	method, url string
-	header      http.Header
-}
-
-func request(c Config, scan interface{}, args requestArgs) error {
-	client := http.Client{Timeout: 10 * time.Second}
-
-	req, err := http.NewRequest(args.method, args.url, nil)
-	if err != nil {
-		return err
-	}
-	if args.header != nil {
-		req.Header = args.header
-	}
-
-	req.SetBasicAuth(c.User, c.Pass)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close() // nolint: errcheck
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	//fmt.Printf("%v\n", string(data))
-	return json.Unmarshal(data, scan)
-}
-
 // InStringSlice reports whether str is within list
 func InStringSlice(list []string, str string) bool {
 	for _, item := range list {
@@ -698,51 +679,4 @@ func InStringSlice(list []string, str string) bool {
 		}
 	}
 	return false
-}
-
-// Get all Go repos.
-func getRepos(c Config) ([]Repository, error) {
-	var allRepos []Repository
-
-	fmt.Printf("fetching repos from GitHub ... ")
-
-	page := 1
-	for {
-		fmt.Printf("%v ", page)
-		var repos []Repository
-		err := request(c, &repos, requestArgs{
-			method: http.MethodGet,
-			url:    fmt.Sprintf("https://api.github.com/organizations/"+c.Organisation[1]+"/repos?per_page=100&page=%v", page),
-			header: map[string][]string{
-				"Accept": {"application/vnd.github.mercy-preview+json"},
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		for _, r := range repos {
-			if r.Language == "Go" || InStringSlice(r.Topics, "go") || InStringSlice(r.Topics, "golang") {
-
-				// TODO: Don't do this on initial clone
-				// TODO: config!
-				//if r.PushedAt.After(time.Now().Add(-48 * time.Hour)) {
-				allRepos = append(allRepos, r)
-				//}
-			}
-		}
-
-		if len(repos) < 100 || len(repos) == 0 {
-			break
-		}
-
-		page++
-	}
-
-	fmt.Println(" done")
-	sort.Slice(allRepos, func(i int, j int) bool {
-		return allRepos[i].Name < allRepos[j].Name
-	})
-
-	return allRepos, nil
 }

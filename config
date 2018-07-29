@@ -124,6 +124,7 @@ group Platform
 	checkout
 	godocgen
 	hub
+	hubc
 	kommentaar
 	launchpad
 	strut

@@ -3,46 +3,67 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:f26eea5aa87ea7aecd199b24a3f7eeac32e3c6e6638cbdbaaff8269196b49188"
+  name = "arp242.net/hubhub"
+  packages = ["."]
+  pruneopts = ""
+  revision = "13b6373d21df1f5c884e250646170e5ba6f9bf6b"
+
+[[projects]]
+  branch = "master"
+  digest = "1:cd76edd18c8819c522b2259bc3239719204f000cbaeb7391de403281a7366913"
   name = "arp242.net/sconfig"
   packages = ["."]
+  pruneopts = ""
   revision = "733b9df4c03101676f9cbfab02c606078e4409ee"
 
 [[projects]]
   branch = "master"
+  digest = "1:db2f4755dc5ed6a8df39065c20128ee9116e4685c3c45f74aa35dd17053292cb"
   name = "arp242.net/singlepage"
   packages = ["singlepage"]
+  pruneopts = ""
   revision = "dcbf3446e4fd1c2c5fe8f597c3f42906b63a0f98"
 
 [[projects]]
+  digest = "1:32fa3ff538ddd0b8312f56bcb15ef3340eee00891cd9c76464746b7cebcac210"
   name = "github.com/PuerkitoBio/goquery"
   packages = ["."]
+  pruneopts = ""
   revision = "e1271ee34c6a305e38566ecd27ae374944907ee9"
   version = "v1.1.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:8012998ddb3eed9cc0a3b2512d1f37d0947fd604868049cc698d9dc6ea1bd46c"
   name = "github.com/andybalholm/cascadia"
   packages = ["."]
+  pruneopts = ""
   revision = "349dd0209470eabd9514242c688c403c0926d266"
 
 [[projects]]
+  digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = ""
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:24c22a038b17b0cbb9a75e1170f0201bbe0f0df7c23ab34b7829fb0a5700e5c4"
   name = "github.com/tdewolff/minify"
   packages = [
     ".",
     "css",
     "html",
-    "js"
+    "js",
   ]
+  pruneopts = ""
   revision = "90df1aae5028a7cbb441bde86e86a55df6b5aa34"
   version = "v2.3.3"
 
 [[projects]]
+  digest = "1:d6964f3c6fcb133a1c980964f2f856de2a9cf86b9f4cc5abf080ef89720b06bb"
   name = "github.com/tdewolff/parse"
   packages = [
     ".",
@@ -50,32 +71,44 @@
     "css",
     "html",
     "js",
-    "strconv"
+    "strconv",
   ]
+  pruneopts = ""
   revision = "bace4cf682c41e03b154044b561575ff541b83e8"
   version = "v2.3.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:91b49b4fe010bf1a068df14d9afccff6819a4c0edc90498570a683c97f6e5b69"
   name = "github.com/teamwork/utils"
   packages = [
     "ioutilx",
-    "sliceutil"
+    "sliceutil",
   ]
+  pruneopts = ""
   revision = "5c0740014647b2f77f3479b6d152bfce40b5f64b"
 
 [[projects]]
   branch = "master"
+  digest = "1:1285570ced192ee4703ca44573a4eaf19b5a0895af56f9db2210b171eefd2a41"
   name = "golang.org/x/net"
   packages = [
     "html",
-    "html/atom"
+    "html/atom",
   ]
+  pruneopts = ""
   revision = "c7086645de248775cbf2373cf5ca4d2fa664b8c1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "676613fdfa8873e384ce8babbbe921d32890c8daec05a66741a9a44b60b7d4c0"
+  input-imports = [
+    "arp242.net/hubhub",
+    "arp242.net/sconfig",
+    "arp242.net/singlepage/singlepage",
+    "github.com/PuerkitoBio/goquery",
+    "github.com/teamwork/utils/ioutilx",
+    "github.com/teamwork/utils/sliceutil",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
