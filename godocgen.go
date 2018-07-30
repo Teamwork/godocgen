@@ -120,7 +120,7 @@ func start() error {
 		hubhub.Token = c.Pass
 
 		// Load GitHub repos.
-		repos, err := hubhub.ListRepos("orgs/" + c.Organisation[0])
+		repos, err := listRepos(c.Organisation[0])
 		if err != nil {
 			return fmt.Errorf("cannot get repo list: %v", err)
 		}
@@ -182,8 +182,8 @@ func start() error {
 	return nil
 }
 
-func filterRepos(in []hubhub.Repository) []hubhub.Repository {
-	var out []hubhub.Repository
+func filterRepos(in []repository) []repository {
+	var out []repository
 
 	for _, r := range in {
 		if r.Archived {
@@ -203,7 +203,7 @@ func filterRepos(in []hubhub.Repository) []hubhub.Repository {
 }
 
 // Clone/update repos.
-func updateRepos(c Config, repos []hubhub.Repository) error {
+func updateRepos(c Config, repos []repository) error {
 	orig, err := os.Getwd()
 	if err != nil {
 		return err

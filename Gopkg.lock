@@ -3,11 +3,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:59b0804dd880c82444c2d4df1159c68a7e4948ef2e6451b1d413168246384ca3"
+  digest = "1:f5ba51875e293603f0488761b87564eb9de08594407f2de8087db1be346185fb"
   name = "arp242.net/hubhub"
   packages = ["."]
   pruneopts = "UT"
-  revision = "50ec4a69ff6d78a0ec36bba4837589e78433f74a"
+  revision = "7af66695dc3e952285f6a3048470d8a97e153327"
 
 [[projects]]
   digest = "1:15dce9032323627745e788671b99a0ca125008fd1025465a65cbb8fb7253b3cb"
@@ -97,7 +97,7 @@
     "html/atom",
   ]
   pruneopts = "UT"
-  revision = "3673e40ba22529d22c3fd7c93e97b0ce50fa7bdd"
+  revision = "c4299a1a0d8524c11563db160fbf9bddbceadb21"
 
 [solve-meta]
   analyzer-name = "dep"
