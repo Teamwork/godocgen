@@ -19,7 +19,7 @@
 
 <div id="page" class="wide">
 	<div class="container">
-		<h1>Package {{ .pkg.Name }}</h1>
+		<h1><a href="https://{{ .pkg.FullImportPath }}">Package {{ .pkg.Name }}</a></h1>
 		{{ .godoc }}
         <div id="footer">Generated on {{.now}} from commit
             {{/* TODO: Link won't work for subpackages */}}

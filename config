@@ -36,21 +36,12 @@ rewrite-source github
 # given.
 #non-grouped other
 
-# Exclude some repos; they will not be cloned.
-exclude
-	TeamworkDeskTool
-	chat-nwjs-to-electron
-	email
-	integrations-microsoftconnectors
-	ops-moveCompanyProfileImagesToS3
-	ops-moveUserProfileImagesToS3
-
 home-text
 	This is all the documentation for all our Go code; both public and private.
-	It is deployed automatically from
-	<a href="https://github.com/Teamwork/docs">the <code>docs</code> repo</a>
-	which is in turn generated automatically with
-	<a href="https://github.com/teamwork/godocgen">the <code>godocgen</code> tool</a>.</p>
+
+# Exclude some repos; they will not be cloned.
+exclude
+	email
 
 # Group defintion; first word is the group name, then any number of words for
 # the description until "---", after which each word will be a package name to
@@ -61,82 +52,6 @@ group Libraries
 	cache
 	database
 	datadog
-	dlm
-	easytpl
-	echoutil
-	factorygen
-	flipout
-	geoip
-	goamqp
-	guru
-	htmltotext
-	i18n
-	israce
-	log
-	mailaddress
-	mailcheckerc
-	mailprovider
-	middleware
-	must
-	nameparser
-	reload
-	s3pp
-	spamc
-	test
-	tmpdir
-	tnef
-	toutf8
-	try
-	tryhttp
-	twmail
-	utils
-	validate
-	vat
-
-group Desk
-	---
-	desk
-	deskactivity
-	deskdocs
-	deske2e
-	deskedge
-	deskimporter
-	desksentiment
-	desksockets
-	desktwitter
-	deskwebhooks
-	elasticdesk
-	mailchecker
-
-group Projects
-	---
-	TeamworkAPIInGO
-	apidocs-projects
-	notification-server
-	projects-api
-	projects-webhooks
-	projectsapigo
-
-group Platform
-	---
-	checkout
-	godocgen
-	hub
-	hubc
-	kommentaar
-	launchpad
-	strut
-	twbot
-
-group CRM
-	---
-	crm-core
-	crmcore
-	crm-exchange-rates
-
-group Spaces
-	---
-	spaces-api
 
 group Other
 	---

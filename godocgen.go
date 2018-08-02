@@ -583,6 +583,7 @@ func removePathPrefix(full, remove string) string {
 	return strings.Trim(strings.Replace(full, remove, "", 1), "/")
 }
 
+// TODO: can probably replace with https://github.com/Teamwork/utils/blob/master/goutil/goutil.go
 func list(c Config) ([]packageT, error) {
 	packages := []packageT{}
 
