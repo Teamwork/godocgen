@@ -15,11 +15,6 @@ type repository struct {
 	Topics   []string  `json:"topics"`
 }
 
-type info struct {
-	PublicRepos  int `json:"public_repos"`
-	PrivateRepos int `json:"total_private_repos"`
-}
-
 func listRepos(org string) ([]repository, error) {
 	var repos []repository
 	err := hubhub.Paginate(&repos, "GET", "/orgs/"+org+"/repos", 0)

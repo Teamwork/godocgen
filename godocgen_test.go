@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 )
@@ -19,7 +20,7 @@ func TestParseConfigWithoutEnvOverwrite(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	defer os.Remove(mockConfigFile.Name())
+	defer cleanupConfigFile(mockConfigFile)
 
 	// Test body
 	config, err := parseConfig(options{config: mockConfigFile.Name()})
@@ -52,19 +53,19 @@ func TestParseConfigWithEnvOverwrite(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	defer os.Remove(mockConfigFile.Name())
+	defer cleanupConfigFile(mockConfigFile)
 
 	err = os.Setenv("GITHUB_USER", mockEnvUser)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	defer os.Setenv("GITHUB_USER", "")
 
 	err = os.Setenv("GITHUB_PASS", mockEnvPass)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	defer os.Setenv("GITHUB_PASS", "")
+	defer cleanupEnvVars()
+
 	// Test body
 	config, err := parseConfig(options{config: mockConfigFile.Name()})
 	if err != nil {
@@ -87,7 +88,7 @@ func TestParseConfigNoUserError(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	defer os.Remove(mockConfigFile.Name())
+	defer cleanupConfigFile(mockConfigFile)
 
 	// Test body
 	_, err = parseConfig(options{config: mockConfigFile.Name()})
@@ -105,7 +106,7 @@ func TestParseConfigNoPassError(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	defer os.Remove(mockConfigFile.Name())
+	defer cleanupConfigFile(mockConfigFile)
 
 	// Test body
 	_, err = parseConfig(options{config: mockConfigFile.Name()})
@@ -137,4 +138,23 @@ func createMockConfig(name string, values map[string]string) (*os.File, error) {
 	}
 
 	return file, nil
+}
+
+func cleanupConfigFile(f *os.File) {
+	err := os.Remove(f.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func cleanupEnvVars() {
+	err := os.Setenv("GITHUB_USER", "")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.Setenv("GITHUB_PASS", "")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
