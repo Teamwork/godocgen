@@ -23,8 +23,8 @@ clonedir ./_clone
 
 # GitHub credentials. Will also be loaded from environment (GITHUB_USER,
 # GITHUB_PASS).
-user Carpetsmoker
-pass  # export GITHUB_PASS
+# user someGitUser
+# pass  someApiToken
 
 # Add --depth=1 to git clone
 shallow-clone yes

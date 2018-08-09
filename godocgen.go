@@ -67,6 +67,11 @@ type options struct {
 
 var templates = template.Must(template.ParseFiles("package.tmpl", "index.tmpl", "home.tmpl"))
 
+var (
+	errNoUser = errors.New("no github user set; please set 'user' in config or use the GITHUB_USER env variable")
+	errNoPass = errors.New("no github password set; please set 'pass' in config or use the GITHUB_PASS env variable")
+)
+
 func main() {
 	err := start()
 	if err != nil {
@@ -88,34 +93,12 @@ func start() error {
 	flag.BoolVar(&opts.skipClone, "s", false, "skip git clone/pull")
 	flag.Parse()
 
-	// Parse config.
-	var c Config
-	sconfig.RegisterType("[]main.group", func(v []string) (interface{}, error) {
-		g := group{Name: v[0]}
-
-		for i := range v[1:] {
-			if v[i+1] == "---" {
-				g.Projects = v[i+2:]
-				break
-			}
-			g.Desc += v[i+1] + " "
-		}
-		return []group{g}, nil
-	})
-	err := sconfig.Parse(&c, opts.config, nil)
+	c, err := parseConfig(opts)
 	if err != nil {
-		return fmt.Errorf("cannot load config: %v", err)
+		return fmt.Errorf("cannot parse config: %v", err)
 	}
-	c.SkipClone = c.SkipClone || opts.skipClone
 
 	if !c.SkipClone {
-		if c.Pass == "" {
-			c.Pass = os.Getenv("GITHUB_PASS")
-			if c.Pass == "" {
-				return errors.New("no password set; please set 'pass' in config or use the GITHUB_PASS env variable")
-			}
-		}
-
 		hubhub.User = c.User
 		hubhub.Token = c.Pass
 
@@ -126,7 +109,7 @@ func start() error {
 		}
 
 		repos = filterRepos(repos)
-		err = updateRepos(c, repos)
+		err = updateRepos(*c, repos)
 		if err != nil {
 			return fmt.Errorf("cannot update repo: %v", err)
 		}
@@ -160,26 +143,68 @@ func start() error {
 		return fmt.Errorf("could not copy to %v: %v", staticDir, err)
 	}
 
-	packages, err := list(c)
+	packages, err := list(*c)
 	if err != nil {
 		return fmt.Errorf("cannot list packages: %v", err)
 	}
 
 	for _, pkg := range packages {
-		err := writePackage(c, packages, pkg)
+		err := writePackage(*c, packages, pkg)
 		if err != nil {
 			return fmt.Errorf("could not write package %v: %v", pkg.Name, err)
 		}
 	}
 
-	if err := makeIndexes(c); err != nil {
+	if err := makeIndexes(*c); err != nil {
 		return fmt.Errorf("could not generate index.html files: %v", err)
 	}
-	if err := makeHome(c, packages); err != nil {
+	if err := makeHome(*c, packages); err != nil {
 		return fmt.Errorf("could not generate index.html files: %v", err)
 	}
 
 	return nil
+}
+
+func parseConfig(opts options) (*Config, error) {
+	sconfig.RegisterType("[]main.group", func(v []string) (interface{}, error) {
+		g := group{Name: v[0]}
+
+		for i := range v[1:] {
+			if v[i+1] == "---" {
+				g.Projects = v[i+2:]
+				break
+			}
+			g.Desc += v[i+1] + " "
+		}
+		return []group{g}, nil
+	})
+	c := Config{}
+	err := sconfig.Parse(&c, opts.config, nil)
+	if err != nil {
+		return nil, err
+	}
+	c.SkipClone = c.SkipClone || opts.skipClone
+
+	if !c.SkipClone {
+		// The env vars should override the ones defined in the config
+		envUser := os.Getenv("GITHUB_USER")
+		if envUser != "" {
+			c.User = envUser
+		}
+		if c.User == "" {
+			return nil, errNoUser
+		}
+
+		envPass := os.Getenv("GITHUB_PASS")
+		if envPass != "" {
+			c.Pass = envPass
+		}
+		if c.Pass == "" {
+			return nil, errNoPass
+		}
+	}
+
+	return &c, nil
 }
 
 func filterRepos(in []repository) []repository {
