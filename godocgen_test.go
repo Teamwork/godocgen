@@ -10,7 +10,6 @@ import (
 func TestParseConfigWithoutEnvOverwrite(t *testing.T) {
 	mockUser := "someGitUser"
 	mockPass := "someGitPass"
-
 	// Test preparation
 	mockConfValues := map[string]string{
 		"user": mockUser,
@@ -21,17 +20,14 @@ func TestParseConfigWithoutEnvOverwrite(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 	}
 	defer cleanupConfigFile(mockConfigFile)
-
 	// Test body
 	config, err := parseConfig(options{config: mockConfigFile.Name()})
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-
 	if config.User != mockUser {
 		t.Errorf("expected config.User to be equal to config user")
 	}
-
 	if config.Pass != mockPass {
 		t.Errorf("expected config.Pass to be equal to config pass")
 	}
@@ -89,14 +85,12 @@ func TestParseConfigNoUserError(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 	}
 	defer cleanupConfigFile(mockConfigFile)
-
 	// Test body
 	_, err = parseConfig(options{config: mockConfigFile.Name()})
 	if err != errNoUser {
 		t.Errorf("expected errNoUser, got %v", err)
 	}
 }
-
 func TestParseConfigNoPassError(t *testing.T) {
 	// Test preparation
 	mockConfValues := map[string]string{
@@ -107,14 +101,12 @@ func TestParseConfigNoPassError(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 	}
 	defer cleanupConfigFile(mockConfigFile)
-
 	// Test body
 	_, err = parseConfig(options{config: mockConfigFile.Name()})
 	if err != errNoPass {
 		t.Errorf("expected errNoPass, got %v", err)
 	}
 }
-
 func TestParseConfigParseError(t *testing.T) {
 	_, err := parseConfig(options{config: "invalid_file"})
 	if err == nil {

@@ -109,7 +109,7 @@ func start() error {
 		}
 
 		repos = filterRepos(repos)
-		err = updateRepos(*c, repos)
+		err = updateRepos(c, repos)
 		if err != nil {
 			return fmt.Errorf("cannot update repo: %v", err)
 		}
@@ -143,29 +143,29 @@ func start() error {
 		return fmt.Errorf("could not copy to %v: %v", staticDir, err)
 	}
 
-	packages, err := list(*c)
+	packages, err := list(c)
 	if err != nil {
 		return fmt.Errorf("cannot list packages: %v", err)
 	}
 
 	for _, pkg := range packages {
-		err := writePackage(*c, packages, pkg)
+		err := writePackage(c, packages, pkg)
 		if err != nil {
 			return fmt.Errorf("could not write package %v: %v", pkg.Name, err)
 		}
 	}
 
-	if err := makeIndexes(*c); err != nil {
+	if err := makeIndexes(c); err != nil {
 		return fmt.Errorf("could not generate index.html files: %v", err)
 	}
-	if err := makeHome(*c, packages); err != nil {
+	if err := makeHome(c, packages); err != nil {
 		return fmt.Errorf("could not generate index.html files: %v", err)
 	}
 
 	return nil
 }
 
-func parseConfig(opts options) (*Config, error) {
+func parseConfig(opts options) (Config, error) {
 	sconfig.RegisterType("[]main.group", func(v []string) (interface{}, error) {
 		g := group{Name: v[0]}
 
@@ -181,7 +181,7 @@ func parseConfig(opts options) (*Config, error) {
 	c := Config{}
 	err := sconfig.Parse(&c, opts.config, nil)
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 	c.SkipClone = c.SkipClone || opts.skipClone
 
@@ -192,7 +192,7 @@ func parseConfig(opts options) (*Config, error) {
 			c.User = envUser
 		}
 		if c.User == "" {
-			return nil, errNoUser
+			return c, errNoUser
 		}
 
 		envPass := os.Getenv("GITHUB_PASS")
@@ -200,11 +200,11 @@ func parseConfig(opts options) (*Config, error) {
 			c.Pass = envPass
 		}
 		if c.Pass == "" {
-			return nil, errNoPass
+			return c, errNoPass
 		}
 	}
 
-	return &c, nil
+	return c, nil
 }
 
 func filterRepos(in []repository) []repository {
