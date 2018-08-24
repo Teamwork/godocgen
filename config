@@ -1,7 +1,7 @@
 # vim ft=config
 
-# Organisation name and id
-organisation teamwork 4037476
+# Organisation name.
+organisation Teamwork
 
 # Packages to scan; can be multiple and in format as accepted by "go list".
 scan github.com/teamwork/...

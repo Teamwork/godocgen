@@ -42,7 +42,7 @@ type group struct {
 
 // Config for godocgen.
 type Config struct {
-	Organisation  []string
+	Organisation  string
 	Outdir        string
 	Clonedir      string
 	Scan          []string
@@ -120,7 +120,7 @@ func start() error {
 		hubhub.Token = c.Pass
 
 		// Load GitHub repos.
-		repos, err := listRepos(c.Organisation[0])
+		repos, err := listRepos(c.Organisation)
 		if err != nil {
 			return fmt.Errorf("cannot get repo list: %v", err)
 		}
@@ -217,7 +217,7 @@ func updateRepos(c Config, repos []repository) error {
 	var rErr error
 	defer func() { rErr = os.Chdir(orig) }()
 
-	root := filepath.Join(c.Clonedir, "/src/github.com/", c.Organisation[0])
+	root := filepath.Join(c.Clonedir, "/src/github.com/", c.Organisation)
 	err = os.MkdirAll(root, 0700)
 	if err != nil {
 		return err
@@ -256,12 +256,16 @@ func updateRepos(c Config, repos []repository) error {
 				return err
 			}
 
+			// TODO: need to look at import path comment (if any) and use the
+			// correct path.
+			// Maybe use "go get -d"? Unfortunately there is no way to *not*
+			// fetch dependencies, so that's a bit annoying.
 			cmd := []string{"git", "clone"}
 			if c.ShallowClone {
 				cmd = append(cmd, "--depth=1")
 			}
 			_, _, err := run(append(cmd, "--quiet",
-				fmt.Sprintf("https://github.com/%v/%v", c.Organisation[0], r.Name))...)
+				fmt.Sprintf("https://github.com/%v/%v", c.Organisation, r.Name))...)
 			if err != nil {
 				return err
 			}
@@ -323,7 +327,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 			line, _ := strconv.ParseInt(match[2][1:], 10, 64)
 			dir := strings.Replace(pkg.RelImportPath, pkg.Name, "", 1)
 			return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v%v#L%v">`,
-				c.Organisation[0], pkg.RelImportPath, dir, match[1], line+10)
+				c.Organisation, pkg.RelImportPath, dir, match[1], line+10)
 		})
 
 		// Rewrite links to source files
@@ -331,7 +335,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 			match := reRewriteFileSource.FindAllStringSubmatch(v, -1)[0]
 			s := strings.Split(match[1], "/")
 			return fmt.Sprintf(`<a href="https://github.com/%v/%v/blob/master/%v">`,
-				c.Organisation[0], s[2], strings.Join(s[3:], "/"))
+				c.Organisation, s[2], strings.Join(s[3:], "/"))
 		})
 	}
 
