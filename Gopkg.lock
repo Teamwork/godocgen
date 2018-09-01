@@ -3,27 +3,27 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f5ba51875e293603f0488761b87564eb9de08594407f2de8087db1be346185fb"
+  digest = "1:5cacbf882784c8ef54337df3b65fc56b228897844255023d8b0f16d22b860aa0"
   name = "arp242.net/hubhub"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7af66695dc3e952285f6a3048470d8a97e153327"
+  revision = "907606ee128115e2904bc422b5289396f19e9b1e"
 
 [[projects]]
-  digest = "1:15dce9032323627745e788671b99a0ca125008fd1025465a65cbb8fb7253b3cb"
+  digest = "1:08743c9b0907b0430a0c2a23bd6a4c4cc9003b675bc07dcef429f74833d66ec4"
   name = "arp242.net/sconfig"
   packages = ["."]
   pruneopts = "UT"
-  revision = "733b9df4c03101676f9cbfab02c606078e4409ee"
-  version = "v1.0"
+  revision = "81257f7853e36a198f50a217080f5ad5041dab02"
+  version = "v1.1"
 
 [[projects]]
   branch = "master"
-  digest = "1:3996ac8046d11cb58854887fdc7dee1444971fc1a16e87097a57832d5ac15fd4"
+  digest = "1:ae526778afc12083c731499e8318859edea31315ca882cab72ba5bb3f69e7f3e"
   name = "arp242.net/singlepage"
   packages = ["singlepage"]
   pruneopts = "UT"
-  revision = "0ee88de81550e3098831680e03463455b0db5b07"
+  revision = "fe2ab7ae6e7db1b136177fd1aa6a16a6b56628c2"
 
 [[projects]]
   digest = "1:a62f6ed230a8cd138a9efbe718e7d0b0294f139266f5f55cd942769a9aac8de2"
@@ -79,25 +79,26 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:151e6aa534b6b8b6b50386d0da122fe1d5bfb2e5b530330d98280c6f03ccf2d0"
+  digest = "1:c3af49f0d6e230ba6da93f80a5863b28bbd126321886088c9ce6bc2a32cb52da"
   name = "github.com/teamwork/utils"
   packages = [
     "ioutilx",
     "sliceutil",
+    "stringutil",
   ]
   pruneopts = "UT"
-  revision = "83836483c9a190a9172c450c581ae011a3d363f7"
+  revision = "68176443984665b694aa6ee2f6ec5972883bdafd"
 
 [[projects]]
   branch = "master"
-  digest = "1:cc9018972f0ec220424cadedf663d90048bafe045c5c82bbec23fa221cb8cf38"
+  digest = "1:0185c27476ac2aa653c9b932843b41409b9a42a8f38b09c8e25c8fb1fcd499c5"
   name = "golang.org/x/net"
   packages = [
     "html",
     "html/atom",
   ]
   pruneopts = "UT"
-  revision = "c4299a1a0d8524c11563db160fbf9bddbceadb21"
+  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
 
 [solve-meta]
   analyzer-name = "dep"
