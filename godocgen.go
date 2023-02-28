@@ -18,10 +18,10 @@ import (
 	"strings"
 	"time"
 
-	"arp242.net/hubhub"
-	"arp242.net/sconfig"
-	"arp242.net/singlepage/singlepage"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/arp242/hubhub"
+	"github.com/arp242/sconfig"
+	"github.com/arp242/singlepage"
 	"github.com/teamwork/utils/ioutilx"
 	"github.com/teamwork/utils/sliceutil"
 )
@@ -279,9 +279,12 @@ func updateRepos(c Config, repos []repository) error {
 }
 
 // Rewrite source links from:
-//  <a href="/src/target/redis.go?s=1187:1246#L39">
-//to:
-//  <a href="https://github.com/Teamwork/cache/blob/master/redis.go#L39">
+//
+//	<a href="/src/target/redis.go?s=1187:1246#L39">
+//
+// to:
+//
+//	<a href="https://github.com/Teamwork/cache/blob/master/redis.go#L39">
 var reRewriteSourceGH = regexp.MustCompile(`<a href="/src/target/(.*?\.go)\?s=[0-9:]+#(L\d+)">`)
 
 var reRewriteFileSource = regexp.MustCompile(`<a href="source://(.*?.go)">`)

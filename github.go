@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"arp242.net/hubhub"
+	"github.com/arp242/hubhub"
 )
 
 // repository is a Github repository.
@@ -22,6 +22,6 @@ type info struct {
 
 func listRepos(org string) ([]repository, error) {
 	var repos []repository
-	err := hubhub.Paginate(&repos, "GET", "/orgs/"+org+"/repos", 0)
+	err := hubhub.Paginate(&repos, "/orgs/"+org+"/repos", 0)
 	return repos, err
 }
