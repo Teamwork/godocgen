@@ -1,3 +1,7 @@
 /_site*
 /_clone*
 /godocgen
+vendor
+.DS_Store
+*.coverage
+full_coverage

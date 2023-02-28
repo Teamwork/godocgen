@@ -8,7 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -357,7 +357,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 		return err
 	}
 
-	b, err := ioutil.ReadFile(out)
+	b, err := os.ReadFile(out)
 	if err != nil {
 		return fmt.Errorf("ReadFile: %v", err)
 	}
@@ -414,7 +414,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 		}
 	}
 
-	err = ioutil.WriteFile(out, []byte(html), 0)
+	err = os.WriteFile(out, []byte(html), 0)
 	if err != nil {
 		return fmt.Errorf("WriteFile: %v", err)
 	}
@@ -538,7 +538,7 @@ func makeHome(c Config, packages []packageT) error {
 
 func makeIndex(c Config, path string) error {
 	// Get list of all files and dirs.
-	contents, err := ioutil.ReadDir(path)
+	contents, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
@@ -575,8 +575,8 @@ func run(cmd ...string) (stdout []string, stderr []string, err error) {
 
 	err = r.Start()
 
-	out, _ := ioutil.ReadAll(outPipe)
-	outerr, _ := ioutil.ReadAll(errPipe)
+	out, _ := io.ReadAll(outPipe)
+	outerr, _ := io.ReadAll(errPipe)
 	return strings.Split(strings.Trim(string(out), "\n"), "\n"),
 		strings.Split(strings.Trim(string(outerr), "\n"), "\n"),
 		err
