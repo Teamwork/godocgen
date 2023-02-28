@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Teamwork/godocgen.svg?branch=master)](https://travis-ci.org/Teamwork/godocgen)
+![Build Status](https://github.com/Teamwork/godocgen/actions/workflows/build.yml/badge.svg)
 
 `godocgen` generates self-contained HTML documentation with `godoc`.
 

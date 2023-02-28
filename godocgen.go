@@ -8,7 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,10 +18,10 @@ import (
 	"strings"
 	"time"
 
-	"arp242.net/hubhub"
-	"arp242.net/sconfig"
-	"arp242.net/singlepage/singlepage"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/arp242/hubhub"
+	"github.com/arp242/sconfig"
+	"github.com/arp242/singlepage"
 	"github.com/teamwork/utils/ioutilx"
 	"github.com/teamwork/utils/sliceutil"
 )
@@ -279,9 +279,12 @@ func updateRepos(c Config, repos []repository) error {
 }
 
 // Rewrite source links from:
-//  <a href="/src/target/redis.go?s=1187:1246#L39">
-//to:
-//  <a href="https://github.com/Teamwork/cache/blob/master/redis.go#L39">
+//
+//	<a href="/src/target/redis.go?s=1187:1246#L39">
+//
+// to:
+//
+//	<a href="https://github.com/Teamwork/cache/blob/master/redis.go#L39">
 var reRewriteSourceGH = regexp.MustCompile(`<a href="/src/target/(.*?\.go)\?s=[0-9:]+#(L\d+)">`)
 
 var reRewriteFileSource = regexp.MustCompile(`<a href="source://(.*?.go)">`)
@@ -354,7 +357,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 		return err
 	}
 
-	b, err := ioutil.ReadFile(out)
+	b, err := os.ReadFile(out)
 	if err != nil {
 		return fmt.Errorf("ReadFile: %v", err)
 	}
@@ -411,7 +414,7 @@ func writePackage(c Config, packages []packageT, pkg packageT) error {
 		}
 	}
 
-	err = ioutil.WriteFile(out, []byte(html), 0)
+	err = os.WriteFile(out, []byte(html), 0)
 	if err != nil {
 		return fmt.Errorf("WriteFile: %v", err)
 	}
@@ -535,7 +538,7 @@ func makeHome(c Config, packages []packageT) error {
 
 func makeIndex(c Config, path string) error {
 	// Get list of all files and dirs.
-	contents, err := ioutil.ReadDir(path)
+	contents, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
@@ -572,8 +575,8 @@ func run(cmd ...string) (stdout []string, stderr []string, err error) {
 
 	err = r.Start()
 
-	out, _ := ioutil.ReadAll(outPipe)
-	outerr, _ := ioutil.ReadAll(errPipe)
+	out, _ := io.ReadAll(outPipe)
+	outerr, _ := io.ReadAll(errPipe)
 	return strings.Split(strings.Trim(string(out), "\n"), "\n"),
 		strings.Split(strings.Trim(string(outerr), "\n"), "\n"),
 		err
