@@ -109,6 +109,13 @@ func start() error {
 	c.SkipClone = c.SkipClone || opts.skipClone
 
 	if !c.SkipClone {
+		if c.User == "" {
+			c.User = os.Getenv("GITHUB_USER")
+			if c.User == "" {
+				return errors.New("no username set; please set 'user' in config or use the GITHUB_USER env variable")
+			}
+		}
+
 		if c.Pass == "" {
 			c.Pass = os.Getenv("GITHUB_PASS")
 			if c.Pass == "" {
